@@ -14,7 +14,14 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('email')->unique();
+            $table->string('mobile', 10)->nullable()->unique();
+            $table->string('image_path')->nullable();
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->unsignedBigInteger('zm_id')->nullable(); 
+            $table->foreign('zm_id')->references('id')->on('zonal_managers')->onDelete('set null');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
