@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('lead_id');
+            $table->string('document_name');
             $table->string('file_path');
             $table->timestamps();
             $table->foreign('lead_id')->references('id')->on('leads')->onDelete('cascade');

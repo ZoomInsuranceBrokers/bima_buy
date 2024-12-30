@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lead_id')->constrained('leads')->onDelete('cascade'); 
-            $table->decimal('quote', 10, 2)->nullable();
+            $table->string('quote_name');
+            $table->decimal('price', 10, 2)->nullable();
             $table->json('description');
+            $table->boolean('is_accepted')->default(false);
+            $table->boolean('payment_status')->default(false);
             $table->timestamps();
         });
     }

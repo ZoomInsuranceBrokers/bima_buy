@@ -23,10 +23,13 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->string('mobile_no');
             $table->string('vehicle_number');
-            $table->boolean('is_doc_complete')->default(true);
+            $table->boolean('is_issue')->default(false);
             $table->boolean('is_zm_verified')->default(false);
-            $table->boolean('is_payment_complete')->default(false);
+            $table->boolean('is_retail_verified')->default(false);
             $table->boolean('is_cancel')->default(false);
+            $table->boolean('is_accepted')->default(false);
+            $table->boolean('is_payment_complete')->default(false);
+            $table->boolean('final_status')->default(false);
             $table->timestamps();
         });
     }

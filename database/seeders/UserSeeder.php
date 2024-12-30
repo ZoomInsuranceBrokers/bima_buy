@@ -22,15 +22,18 @@ class UserSeeder extends Seeder
         // Loop to create 20 users
         foreach (range(1, 20) as $index) {
             DB::table('users')->insert([
-                'name' => $faker->name,
-                'gender' => $faker->randomElement(['male', 'female', 'other']),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'gender' => $faker->randomElement(['male', 'female']),
                 'email' => $faker->unique()->safeEmail,
                 'mobile' => $faker->regexify('[0-9]{10}'),
-                'image_path' => 'images/default-profile.png',
+                'image_path' => $faker->randomElement(['male', 'female']) == 'male'
+                    ? 'profile_photos/default_photos/male.jpg'
+                    : 'profile_photos/default_photos/female.jpg',
                 'role_id' => rand(1, 5),
                 'zm_id' => rand(1, 4),
                 'email_verified_at' => now(),
-                'password' => Hash::make('Novel@123'), 
+                'password' => Hash::make('Novel@123'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

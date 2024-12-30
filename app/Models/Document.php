@@ -9,7 +9,7 @@ class Document extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['lead_id', 'file_path'];
+    protected $fillable = ['lead_id','document_name', 'file_path'];
 
     public function lead()
     {
