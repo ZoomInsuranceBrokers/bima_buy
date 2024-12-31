@@ -22,15 +22,13 @@
     </div>
     <ul class="navbar-nav navbar-nav-right">
       <li class="nav-item nav-profile dropdown">
-        <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown"
-          aria-expanded="false">
+        <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
           <div class="nav-profile-img">
-            <img style="width: 37px;height: 37px;" src="{{asset('storage/' . Auth::user()->image_path)}}"
-              alt="image">
+            <img style="width: 37px;height: 37px;" src="{{asset('storage/' . Auth::user()->image_path)}}" alt="image">
             <span class="availability-status online"></span>
           </div>
           <div class="nav-profile-text">
-            <p class="mb-1 text-black">{{Auth::user()->first_name.' '.Auth::user()->last_name}}</p>
+            <p class="mb-1 text-black">{{Auth::user()->first_name . ' ' . Auth::user()->last_name}}</p>
           </div>
         </a>
         <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
@@ -47,52 +45,20 @@
         </a>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
-          data-toggle="dropdown">
+        <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
           <i class="mdi mdi-bell-outline"></i>
-          <span class="count-symbol bg-danger"></span>
+          <span class="count-symbol" id="unreadCount"></span>
         </a>
         <div class="dropdown-menu dropdown-menu-right dropdown-left navbar-dropdown preview-list"
-          aria-labelledby="notificationDropdown">
-          <h6 class="p-3 mb-0">Notifications</h6>
+          aria-labelledby="notificationDropdown" id="notificationsDropdown">
+          <h6 class="p-3 mb-0">Notification</h6>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-success">
-                <i class="mdi mdi-calendar"></i>
-              </div>
-            </div>
-            <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-              <h6 class="preview-subject font-weight-normal mb-1">Event today</h6>
-              <p class="text-gray ellipsis mb-0"> Just a reminder that you have an event today </p>
-            </div>
+          <div id="notificationsList"></div>
+          <div class="dropdown-divider"></div>
+          <a href="{{ route('notifications.fetch') }}" class="p-3 mb-0 text-center d-block text-decoration-none">
+            See all notifications
           </a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-warning">
-                <i class="mdi mdi-settings"></i>
-              </div>
-            </div>
-            <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-              <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-              <p class="text-gray ellipsis mb-0"> Update dashboard </p>
-            </div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-info">
-                <i class="mdi mdi-link-variant"></i>
-              </div>
-            </div>
-            <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-              <h6 class="preview-subject font-weight-normal mb-1">Launch Admin</h6>
-              <p class="text-gray ellipsis mb-0"> New admin wow! </p>
-            </div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <h6 class="p-3 mb-0 text-center">See all notifications</h6>
+
         </div>
       </li>
     </ul>
@@ -102,3 +68,85 @@
     </button>
   </div>
 </nav>
+@push('scripts')
+  <script>
+    $('#notificationDropdown').on('click', function () {
+    $.ajax({
+      url: '{{route('notifications.fetch')}}',
+      method: 'GET',
+      success: function (data) {
+      let notificationsHtml = '';
+      let unreadCount = 0;
+
+      if (data.notifications.length > 0) {
+        // Build notifications list
+        data.notifications.forEach(notification => {
+        const timeAgo = notification.time_ago;
+        const isReadClass = notification.is_read ? '' : 'font-weight-bold';
+        unreadCount += notification.is_read ? 0 : 1;
+
+        notificationsHtml += `
+            <a class="dropdown-item preview-item ${isReadClass}" href="{{route('notifications.fetch')}}">
+            <div class="preview-thumbnail">
+              <img src="${notification.image_url}" alt="image" class="profile-pic">
+            </div>
+            <div class="preview-item-content d-flex align-items-start flex-column justify-content-center" style="padding-right: 15px;">
+              <h6 class="preview-subject ellipsis mb-1">${notification.message}</h6>
+              <p class="text-gray mb-0">From: ${notification.sender_name} | ${timeAgo} ago</p>
+            </div>
+      
+            <div class="ms-auto">
+                ${notification.is_read ? '' : `<button class="btn btn-sm btn-danger mark-as-read" data-id="${notification.id}" style="font-size: 12px; padding: 5px 8px;">Mark as Read</button>`}
+            </div>
+            </a>
+          `;
+        });
+
+        // Display unread count
+        $('#unreadCount').text(unreadCount > 0 ? unreadCount : '').addClass('bg-danger');
+      } else {
+        // No notifications
+        notificationsHtml = `
+      <div class="text-center p-3">
+      <p class="mb-0 text-gray">No notifications available</p>
+      </div>
+      `;
+        // Clear unread count
+        $('#unreadCount').text('');
+      }
+
+      // Update notifications dropdown
+      $('#notificationsList').html(notificationsHtml);
+
+      $('.mark-as-read').on('click', function (e) {
+        e.stopPropagation(); // Prevent triggering the parent dropdown
+        const notificationId = $(this).data('id');
+        markNotificationAsRead(notificationId);
+      });
+      },
+      error: function (error) {
+      console.error('Error fetching notifications:', error);
+      }
+    });
+    });
+
+    function markNotificationAsRead(notificationId) {
+    $.ajax({
+      url: '{{route('notifications.markAsRead')}}',
+      method: 'POST',
+      data: {
+      _token: '{{ csrf_token() }}',
+      id: notificationId
+      },
+      success: function () {
+      // Refresh notifications after marking as read
+      $('#notificationDropdown').trigger('click');
+      },
+      error: function (error) {
+      console.error('Error marking notification as read:', error);
+      }
+    });
+    }
+
+  </script>
+@endpush

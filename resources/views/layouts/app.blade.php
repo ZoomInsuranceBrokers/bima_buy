@@ -26,6 +26,7 @@
         .quote-item .form-group {
           margin-bottom: 15px;
         }
+        
     </style>
     <!-- @vite(['resources/js/app.js']) -->
 </head>

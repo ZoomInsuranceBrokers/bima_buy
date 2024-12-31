@@ -28,16 +28,16 @@
         </div>
     @endif
 
-    <!-- @foreach ($lead_details as $lead)
+    @foreach ($lead_details as $lead)
         <div class="alert alert-warning d-flex align-items-center" role="alert">
             <i class="bi bi-exclamation-circle-fill me-2"></i>
             <div>
                 <strong>{{ $lead->first_name . ' ' . $lead->last_name }}'s documents are incomplete.</strong> Please
-                <a href="{{ route('user.show.foam.to.updateLead', $lead->id) }}" class="alert-link">click here</a> to update
+                <a href="{{ route('user.show.foam.to.updateLead',  ['id' => Crypt::encrypt($lead->id)]) }}" class="alert-link">click here</a> to update
                 and upload the details.
             </div>
         </div>
-    @endforeach -->
+    @endforeach
 
     <div class="row">
         <div class="col-12 grid-margin">
@@ -155,6 +155,7 @@
                     <select id="quoteAction" class="form-control">
                         <option value="accept">Accept Quote</option>
                         <option value="ask_for_another">Ask for another Quote</option>
+                        <option value="cancel">Cancel</option>
                     </select>
                     <button type="button" class="btn btn-primary mt-3" onclick="submitQuoteAction()">Submit</button>
                 </div>

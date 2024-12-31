@@ -6,8 +6,9 @@ use App\Models\PolicyCopy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Events\LeadCreated;
+use App\Models\Notification;
 use App\Models\Quote;
-
+use App\Models\ZonalManager;
 
 class RetailController extends Controller
 {
@@ -16,10 +17,10 @@ class RetailController extends Controller
     {
         $pendingLeads = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'updated_at', 'is_accepted','price','lead_id');
+                $query->select('id', 'updated_at', 'is_accepted', 'price', 'lead_id');
             },
             'user' => function ($query) {
-                $query->select('id', 'first_name', 'last_name');
+                $query->select('id', 'first_name','mobile', 'last_name');
             },
             'zonalManager' => function ($query) {
                 $query->select('id', 'name');
@@ -29,17 +30,12 @@ class RetailController extends Controller
             // ->where('is_retail_verified', 0)
             // ->where('user_id', Auth::user()->id)
             ->where('final_status', 0)
-            ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'is_issue', 'is_retail_verified', 'is_cancel', 'is_accepted','is_payment_complete', 'final_status', 'updated_at')
+            ->where('is_cancel', 0)
+            ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'is_issue', 'is_retail_verified', 'is_cancel', 'is_accepted', 'is_payment_complete', 'final_status', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->get();
 
         // return $pendingLeads;
-
-        // $pendingLeads->each(function($lead) {
-        //     if ($lead->zonalManager == null) {
-        //         dd('Lead without zonalManager:', $lead);
-        //     }});
-
 
         return view('retailpages.retaildashboard', compact('pendingLeads'));
 
@@ -57,12 +53,46 @@ class RetailController extends Controller
         switch ($action) {
             case 'insufficient_details':
                 $lead->is_issue = true;
+                $notifications = [
+                    [
+                        'sender_id' => Auth::user()->id,
+                        'receiver_id' => $lead->user_id,
+                        'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ],
+                    [
+                        'sender_id' => Auth::user()->id,
+                        'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                        'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                ];
+                Notification::insert($notifications);
                 break;
             case 'verified':
                 $lead->is_retail_verified = true;
                 break;
             case 'cancel':
                 $lead->is_cancel = true;
+                $notifications = [
+                    [
+                        'sender_id' => Auth::user()->id,
+                        'receiver_id' => $lead->user_id,
+                        'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ],
+                    [
+                        'sender_id' => Auth::user()->id,
+                        'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                        'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Reatil Team.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                ];
+                Notification::insert($notifications);
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -91,7 +121,7 @@ class RetailController extends Controller
 
     public function store(Request $request)
     {
-       
+
         $request->validate([
             'lead_id' => 'required|exists:leads,id',
             'quotes' => 'required|array',
@@ -106,10 +136,22 @@ class RetailController extends Controller
             $quote = Quote::create([
                 'lead_id' => $request->lead_id,
                 'quote_name' => $quoteData['quote_name'],
-                'price' => $quoteData['price'], 
-                'description' => $quoteData['features'], 
+                'price' => $quoteData['price'],
+                'description' => $quoteData['features'],
             ]);
         }
+
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => ZonalManager::where('id', Lead::find($request->lead_id)->zm_id)->first()->user_id,
+            'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
+        ]);
+
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' =>Lead::find($request->lead_id)->user_id,
+            'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
+        ]);
 
         return response()->json(['message' => 'Quotes added successfully!']);
     }
@@ -126,12 +168,42 @@ class RetailController extends Controller
         switch ($action) {
             case 'complete':
                 $lead->is_payment_complete = true;
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
+                ]);
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                    'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
+                ]);
                 break;
             case 'notify':
-               //////i write code send notification///////
+                //////i write code send notification///////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
+                ]);
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                    'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
+                ]);
                 break;
             case 'cancel':
                 $lead->is_cancel = true;
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
+                ]);
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
+                ]);
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -145,7 +217,7 @@ class RetailController extends Controller
     public function uploadPolicy($id, Request $request)
     {
         $request->validate([
-            'policyCopy' => 'required|file|mimes:pdf',
+            'policyCopy' => 'required|file|mimes:pdf,jpeg,jpg,png,gif,bmp,tiff',
         ]);
 
         $lead = Lead::find($id);
@@ -162,20 +234,27 @@ class RetailController extends Controller
             'zm_id' => $lead->zm_id,
             'path' => $path,
         ]);
-        $lead->final_status=true;
+        $lead->final_status = true;
         $lead->save();
 
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => $lead->user_id,
+            'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
+        ]);
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+            'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
+        ]);
         return response()->json(['success' => true, 'message' => 'Policy uploaded successfully']);
     }
-
-
-
 
     public function completedLeads()
     {
         $completedLeads = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'updated_at', 'lead_id','price')
+                $query->select('id', 'updated_at', 'lead_id', 'price')
                     ->where('is_accepted', 1);
             },
             'user' => function ($query) {
@@ -186,11 +265,11 @@ class RetailController extends Controller
             }
         ])
             ->where('final_status', 1)
-            ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name','updated_at')
+            ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->get();
 
-            // return $completedLeads;
-        return view('retailpages.completedleads',compact('completedLeads'));
+        // return $completedLeads;
+        return view('retailpages.completedleads', compact('completedLeads'));
     }
 }

@@ -28,7 +28,13 @@
                                         <td>{{$lead->id}}</td>
                                         <td>{{$lead->first_name . ' ' . $lead->last_name}}</td>
                                         <td><label class="badge badge-success">Verifyed by{{$lead->zonalManager->name}}</label></td>
-                                        <td><strong>{{$lead->quotes[0]->price}}</strong></td>
+                                        <td>
+                                                @if(!empty($lead->quotes) && $lead->quotes->isNotEmpty())
+                                                    {{$lead->quotes->first()->price}}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
                                         <td><label class="badge badge-success">Booked</label></td>
                                         <td>
                                             @if(!empty($lead->quotes) && $lead->quotes->isNotEmpty())

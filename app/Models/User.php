@@ -45,4 +45,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function zonalManager()
+    {
+        return $this->hasOne(ZonalManager::class, 'user_id', 'id');
+    }
 }

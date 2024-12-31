@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Auth;
 
 class ValidRc
@@ -20,7 +20,7 @@ class ValidRc
         if (Auth::user()->role_id == 2) {
             return $next($request);
         } else {
-            return redirect()->action([AuthController::class, 'login']);
+            return redirect()->action([LoginController::class, 'showLoginForm']);
         }
     }
 }

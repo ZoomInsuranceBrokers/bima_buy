@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\Document;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Events\LeadCreated;
 use App\Models\Quote;
-
+use App\Models\ZonalManager;
+use Illuminate\Support\Facades\Crypt;
 
 class UserController extends Controller
 {
@@ -25,67 +27,19 @@ class UserController extends Controller
         // Fetching pending leads with related quotes
         $pending_lead_details = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'lead_id', 'updated_at');
+                $query->select('id', 'lead_id','is_accepted', 'price','updated_at');
             }
         ])
             ->where('final_status', 0)
             ->where('user_id', $userId)
-            ->select('id', 'first_name', 'last_name', 'mobile_no', 'is_payment_complete', 'is_zm_verified', 'is_retail_verified', 'final_status', 'updated_at')
+            ->select('id', 'first_name', 'last_name', 'mobile_no', 'is_payment_complete', 'is_zm_verified', 'is_retail_verified', 'final_status', 'is_cancel', 'is_accepted','updated_at')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         // return $pending_lead_details;
 
-        // Return view with both sets of data
+    
         return view('userpages.userdashboard', compact('lead_details', 'pending_lead_details'));
-    }
-
-    public function getQuoteDetails($leadId)
-    {
-        $quotes = Quote::where('lead_id', $leadId)->get();
-
-        return response()->json([
-            'quotes' => $quotes
-        ]);
-    }
-
-
-    public function submitQuoteAction(){
-        $quoteId = request('quote_id');
-        $action = request('action');
-
-        $quote = Quote::find($quoteId);
-
-        if(!$quote){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Quote not found'
-            ]);
-        }
-
-        switch ($action) {
-            case 'accept':
-                $quote->update([
-                    'is_accepted' => true,
-                ]);
-                Lead::where('id', $quote->lead_id )->update([
-                    'is_accepted' => 1,
-                ]);
-                break;
-            case 'ask_for_another':
-               ////////send notification to zm
-                break;
-            default:
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Invalid action'
-                ]);
-        }
-
-       
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Quote action updated successfully'
-        ]);
     }
 
     public function createLead()
@@ -140,14 +94,20 @@ class UserController extends Controller
 
         $user_name = Auth::user()->first_name . ' ' . Auth::user()->last_name;
 
-        event(new LeadCreated($user_name));
+
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
+            'message' => 'Lead created by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+        ]);
+        // event(new LeadCreated($user_name));
 
         return redirect()->back()->with('success', 'Lead created successfully with Trackid: ' . $lead->id);
     }
 
     public function showFoamToUpdateLead($id)
     {
-        $lead = Lead::with('documents')->find($id);
+        $lead = Lead::with('documents')->find(Crypt::decrypt($id));
 
         if (!$lead) {
             return redirect()->back()->with('error', 'Lead not found');
@@ -213,12 +173,108 @@ class UserController extends Controller
             }
         }
 
+        Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => $lead->is_zm_verified ? 4 : ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
+            'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+        ]);
+
         return redirect()->route('user.dashboard')->with('success', $lead->first_name . ' ' . $lead->last_name . ' details updated successfully');
     }
 
 
+    public function getQuoteDetails($leadId)
+    {
+        $quotes = Quote::where('lead_id', $leadId)->get();
+
+        return response()->json([
+            'quotes' => $quotes
+        ]);
+    }
 
 
+    public function submitQuoteAction()
+    {
+        $quoteId = request('quote_id');
+        $action = request('action');
+
+        $quote = Quote::find($quoteId);
+
+        if (!$quote) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Quote not found'
+            ]);
+        }
+
+        switch ($action) {
+            case 'accept':
+                $quote->update([
+                    'is_accepted' => true,
+                ]);
+                Lead::where('id', $quote->lead_id)->update([
+                    'is_accepted' => 1,
+                ]);
+
+                //////////send notification to zm ////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
+                    'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
+                ]);
+
+                //////////send notification to retail team////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => 4,
+                    'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
+                ]);
+                break;
+            case 'ask_for_another':
+                 //////////send notification to zm ////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
+                    'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
+                ]);
+                //////////send notification to retail team////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => 4,
+                    'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
+                ]);
+                break;
+
+            case 'cancel':
+                Lead::where('id', $quote->lead_id)->update([
+                    'is_cancel' => 1,
+                ]);
+                 //////////send notification to zm ////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' =>ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
+                    'message' => 'Lead'.$quote->lead_id.''.'has been cancelled by Rc',
+                ]);
+                //////////send notification to retail team////////////
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => 4,
+                    'message' => 'Lead Id '.$quote->lead_id.''.' has been cancelled by Rc',
+                ]);
+                break;
+            default:
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid action'
+                ]);
+        }
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Quote action updated successfully'
+        ]);
+    }
 
     public function completedLead()
     {

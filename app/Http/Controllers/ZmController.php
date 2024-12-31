@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\Document;
+use App\Models\Notification;
 use App\Models\Quote;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\PolicyCopy;
+use App\Models\ZonalManager;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -16,23 +18,25 @@ class ZmController extends Controller
     {
         $leads = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'updated_at');
+                $query->select('id', 'lead_id', 'is_accepted', 'price','updated_at');  
+            },
+            'user' => function ($query) {
+                $query->select('id', 'first_name','mobile' ,'last_name'); 
             }
-        ])->where('zm_id', Auth::user()->zm_id)
-
-            ->select('id', 'user_id', 'first_name', 'last_name', 'is_issue', 'is_zm_verified', 'is_retail_verified', 'is_cancel', 'is_payment_complete', 'final_status', 'updated_at')
-            ->with([
-                'user' => function ($query) {
-                    $query->select('first_name', 'last_name');
-                }
-            ])
+        ])
+            ->where('zm_id', Auth::user()->zm_id)
+            ->where('is_cancel',0)
+            ->select(
+                'id','user_id','first_name','last_name','is_issue','is_zm_verified','is_accepted','is_retail_verified','is_cancel','is_payment_complete','final_status','updated_at'
+            )
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        // return $leads;
+        //  return $leads;
 
         return view('zmpages.zmdashboard', compact('leads'));
     }
+
 
     public function getLeadDetails($id)
     {
@@ -63,11 +67,26 @@ class ZmController extends Controller
         switch ($action) {
             case 'insufficient_details':
                 $lead->is_issue = true;
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
+                ]);
                 break;
             case 'verified':
                 $lead->is_zm_verified = true;
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => 4,
+                    'message' => 'Please send a quote for Lead ID ' . $lead->id . '.',
+                ]);
                 break;
             case 'cancel':
+                Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Zonal Manger.',
+                ]);
                 $lead->is_cancel = true;
                 break;
             default:
@@ -151,6 +170,25 @@ class ZmController extends Controller
         return Storage::download($filePath);
     }
 
+    public function completedLeads()
+    {
+        $completedLeads = Lead::with([
+            'quotes' => function ($query) {
+                $query->select('id', 'updated_at', 'lead_id', 'price')
+                    ->where('is_accepted', 1);
+            },
+            'user' => function ($query) {
+                $query->select('id', 'first_name', 'last_name');
+            }
+        ])
+            ->where('final_status', 1)
+            ->where('zm_id', ZonalManager::where('user_id', Auth::user()->id)->first()->id)
+            ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
+        // return $completedLeads;
+        return view('zmpages.completedleads', compact('completedLeads'));
+    }
 
 }

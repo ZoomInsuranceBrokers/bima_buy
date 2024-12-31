@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Auth;
 
-class ValidZm
+class ValidRetail
 {
     /**
      * Handle an incoming request.
@@ -17,7 +17,7 @@ class ValidZm
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role_id == 3) {
+        if (Auth::user()->role_id == 4) {
             return $next($request);
         } else {
             return redirect()->action([LoginController::class, 'showLoginForm']);
