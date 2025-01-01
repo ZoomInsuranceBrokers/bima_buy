@@ -167,18 +167,6 @@
 </div>
 
 @push('scripts')
-    <script type="module">
-        window.Echo.channel('lead-created')
-            .listen('.lead-created', (e) => {
-                console.log(e);
-                $('#notification').html(`
-                                                                <div class="alert alert-success">
-                                                                    New lead created by ${e.lead}
-                                                                </div>
-                                                            `);
-            });
-    </script>
-
     <script>
         $(document).ready(function () {
             window.getLeadDetails = function (leadId) {

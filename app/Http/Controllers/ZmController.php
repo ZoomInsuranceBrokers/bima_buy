@@ -6,10 +6,13 @@ use App\Models\Document;
 use App\Models\Notification;
 use App\Models\Quote;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\Request;
 use App\Models\PolicyCopy;
 use App\Models\ZonalManager;
 use Illuminate\Support\Facades\Storage;
+use App\Events\NotificationSent;
+use App\Events\UpdateLead;
 
 
 class ZmController extends Controller
@@ -67,33 +70,43 @@ class ZmController extends Controller
         switch ($action) {
             case 'insufficient_details':
                 $lead->is_issue = true;
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
                 ]);
+                // broadcast(new NotificationSent($notification));
+
+                $update_message = [
+                    'lead_id' =>Crypt::encrypt($lead->id),
+                    'receiver_id' => $lead->user_id,
+                    'message' => $request->input('message') . ' .This Message For Tracking ID ' . $lead->id . '.',
+                ];
+                broadcast(new UpdateLead($update_message));
                 break;
             case 'verified':
                 $lead->is_zm_verified = true;
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'Please send a quote for Lead ID ' . $lead->id . '.',
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             case 'cancel':
-                Notification::create([
+                $lead->is_cancel = true;
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Zonal Manger.',
                 ]);
-                $lead->is_cancel = true;
+                broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
         }
 
-        $lead->save();
+        // $lead->save();
 
         return response()->json(['success' => true, 'message' => 'Action processed successfully']);
     }

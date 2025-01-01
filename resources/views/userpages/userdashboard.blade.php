@@ -3,20 +3,6 @@
 @section('content')
 
 <div class="content-wrapper">
-    <div class="page-header">
-        <h3 class="page-title">
-            <span class="page-title-icon bg-gradient-primary text-white me-2">
-                <i class="mdi mdi-home"></i>
-            </span> Dashboard
-        </h3>
-        <nav aria-label="breadcrumb">
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item active" aria-current="page">
-                    <span></span>Overview <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
-                </li>
-            </ul>
-        </nav>
-    </div>
 
     @if(session('success'))
         <div class="alert alert-success">
@@ -28,17 +14,20 @@
         </div>
     @endif
 
-    @foreach ($lead_details as $lead)
-        <div class="alert alert-warning d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-circle-fill me-2"></i>
-            <div>
-                <strong>{{ $lead->first_name . ' ' . $lead->last_name }}'s documents are incomplete.</strong> Please
-                <a href="{{ route('user.show.foam.to.updateLead',  ['id' => Crypt::encrypt($lead->id)]) }}" class="alert-link">click here</a> to update
-                and upload the details.
-            </div>
-        </div>
-    @endforeach
+    <div id="updateLeadDetails">
 
+        <!-- @foreach ($lead_details as $lead)
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                <div>
+                    <strong>{{ $lead->first_name . ' ' . $lead->last_name }}'s documents are incomplete.</strong> Please
+                    <a href="{{ route('user.show.foam.to.updateLead', ['id' => Crypt::encrypt($lead->id)]) }}"
+                        class="alert-link">click here</a> to update
+                    and upload the details.
+                </div>
+            </div>
+        @endforeach -->
+    </div>
     <div class="row">
         <div class="col-12 grid-margin">
             <div class="card">
@@ -185,17 +174,17 @@
 
                         // Using Bootstrap grid to create a responsive layout
                         quotesHTML += `<div class="col-12 col-md-6 mb-3"> <!-- 12 for mobile, 4 for medium screens -->
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">${quote.quote_name}</h5>
-                                                        <p><strong>Features:</strong></p>
-                                                        <ul>${featuresList}</ul>
-                                                        <p><strong>Price:</strong> $${quote.price}</p>
-                                                        <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
-                                                        <input type="checkbox" class="quoteCheckbox" data-quote-id="${quote.id}" />
-                                                    </div>
-                                                </div>
-                                            </div>`;
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <h5 class="card-title">${quote.quote_name}</h5>
+                                                                    <p><strong>Features:</strong></p>
+                                                                    <ul>${featuresList}</ul>
+                                                                    <p><strong>Price:</strong> $${quote.price}</p>
+                                                                    <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
+                                                                    <input type="checkbox" class="quoteCheckbox" data-quote-id="${quote.id}" />
+                                                                </div>
+                                                            </div>
+                                                        </div>`;
                     });
 
                     // Insert generated HTML into the modal
@@ -252,6 +241,22 @@
 
 
 
+    </script>
+    <script type="module">
+        window.Echo.private('updateLeadDetails.{{ Auth::user()->id }}')
+            .listen('UpdateLead', (data) => {
+                console.log(data);
+                $('#updateLeadDetails').html(`
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <div>
+                        <strong>${data.update_message}'s documents are incomplete.</strong> Please
+                        <a href="{{ route('user.show.foam.to.updateLead', ['id' => '__id__']) }}"
+                            class="alert-link">click here</a> to update and update the details.
+                    </div>
+                </div>
+            `.replace('__id__', data.lead_id));
+            });
     </script>
 @endpush
 

@@ -27,9 +27,9 @@ Route::middleware('auth')->group(function () {
 
 /////////////////////////////////////////admin////////////////////////////////////////
 
-Route::get('/user/dashboard', function () {
-    return view('adminpages.index');
-})->name('user.dashboard');
+// Route::get('/user/dashboard', function () {
+//     return view('adminpages.index');
+// })->name('user.dashboard');
 
 
 /////////////////////////////////////////user////////////////////////////////////////

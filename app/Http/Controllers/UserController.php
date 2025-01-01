@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use App\Events\LeadCreated;
 use App\Models\Quote;
 use App\Models\ZonalManager;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Crypt;
+use App\Events\NotificationSent;
 
 class UserController extends Controller
 {
@@ -95,12 +97,14 @@ class UserController extends Controller
         $user_name = Auth::user()->first_name . ' ' . Auth::user()->last_name;
 
 
-        Notification::create([
+        $notification=Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
             'message' => 'Lead created by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
         ]);
         // event(new LeadCreated($user_name));
+
+        broadcast(new NotificationSent($notification));
 
         return redirect()->back()->with('success', 'Lead created successfully with Trackid: ' . $lead->id);
     }
@@ -173,11 +177,13 @@ class UserController extends Controller
             }
         }
 
-        Notification::create([
+        $notification=Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => $lead->is_zm_verified ? 4 : ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
             'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
         ]);
+
+        broadcast(new NotificationSent($notification));
 
         return redirect()->route('user.dashboard')->with('success', $lead->first_name . ' ' . $lead->last_name . ' details updated successfully');
     }
@@ -217,32 +223,36 @@ class UserController extends Controller
                 ]);
 
                 //////////send notification to zm ////////////
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
                 ]);
+                broadcast(new NotificationSent($notification));
 
                 //////////send notification to retail team////////////
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             case 'ask_for_another':
                  //////////send notification to zm ////////////
-                Notification::create([
+                 $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
                 ]);
+                broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
 
             case 'cancel':
@@ -250,17 +260,19 @@ class UserController extends Controller
                     'is_cancel' => 1,
                 ]);
                  //////////send notification to zm ////////////
-                Notification::create([
+                 $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' =>ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'Lead'.$quote->lead_id.''.'has been cancelled by Rc',
                 ]);
+                broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
-                Notification::create([
+                $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'Lead Id '.$quote->lead_id.''.' has been cancelled by Rc',
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json([

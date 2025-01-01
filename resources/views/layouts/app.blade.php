@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{asset('vendors/mdi/css/materialdesignicons.min.css')}}">
     <link rel="stylesheet" href="{{asset('vendors/css/vendor.bundle.base.css')}}">
     <link rel="stylesheet" href="{{asset('css/style.css')}}">
-    <link rel="shortcut icon" href="{{asset('images/favicon.ico')}}" />
+    <link rel="shortcut icon" href="{{asset('storage/profile_photos/default_photos/websitelogo.png')}}" />
     @stack('styles')
     <style>
         .dropdown-left {
@@ -26,9 +26,11 @@
         .quote-item .form-group {
           margin-bottom: 15px;
         }
-        
+        .content-wrapper{
+            padding-top: 0px !important;
+        }
     </style>
-    <!-- @vite(['resources/js/app.js']) -->
+    @vite(['resources/js/app.js'])
 </head>
 
 <body>
@@ -54,6 +56,7 @@
                     <p>No sidebar available</p>
             @endswitch
             <div class="main-panel">
+                <div class="container py-2" style="background-color: #f2edf3;" id="liveNotification"></div>
                 @yield('content')
                 @include('partials.footer')
             </div>
@@ -68,11 +71,25 @@
     <script src="{{asset('js/misc.js')}}"></script>
     <script src="{{asset('js/dashboard.js')}}"></script>
     <script src="{{asset('js/todolist.js')}}"></script>
-     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script type="module">
+        window.Echo.private('notification.{{Auth::user()->id}}').listen('NotificationSent', (data) => {
+            $('#liveNotification').html(`
+                <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: relative;">
+                    <strong>Success!</strong> ${data.notification.message}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="position: absolute; top: 12px; right: 12px;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+        });
+    </script>
 
     @stack('scripts')
 
-</body>
+    
 
+</body>
 
 </html>

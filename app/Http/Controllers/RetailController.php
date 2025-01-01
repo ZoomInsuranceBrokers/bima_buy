@@ -9,6 +9,9 @@ use App\Events\LeadCreated;
 use App\Models\Notification;
 use App\Models\Quote;
 use App\Models\ZonalManager;
+use App\Events\NotificationSent;
+use App\Events\UpdateLead;
+use Illuminate\Support\Facades\Crypt;
 
 class RetailController extends Controller
 {
@@ -20,7 +23,7 @@ class RetailController extends Controller
                 $query->select('id', 'updated_at', 'is_accepted', 'price', 'lead_id');
             },
             'user' => function ($query) {
-                $query->select('id', 'first_name','mobile', 'last_name');
+                $query->select('id', 'first_name', 'mobile', 'last_name');
             },
             'zonalManager' => function ($query) {
                 $query->select('id', 'name');
@@ -53,46 +56,48 @@ class RetailController extends Controller
         switch ($action) {
             case 'insufficient_details':
                 $lead->is_issue = true;
-                $notifications = [
-                    [
-                        'sender_id' => Auth::user()->id,
-                        'receiver_id' => $lead->user_id,
-                        'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
-                    [
-                        'sender_id' => Auth::user()->id,
-                        'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                        'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
+                $notification = Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
+                ]);
+                
+                broadcast(new NotificationSent($notification));
+
+                $update_message = [
+                    'lead_id' =>Crypt::encrypt($lead->id),
+                    'receiver_id' => $lead->user_id,
+                    'message' => $request->input('message') . ' .This Message For Tracking ID ' . $lead->id . '.',
                 ];
-                Notification::insert($notifications);
+                broadcast(new UpdateLead($update_message));
+             
+
+                $notification = Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                    'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
+                ]);
+                broadcast(new NotificationSent($notification));
+
                 break;
             case 'verified':
                 $lead->is_retail_verified = true;
                 break;
             case 'cancel':
                 $lead->is_cancel = true;
-                $notifications = [
-                    [
-                        'sender_id' => Auth::user()->id,
-                        'receiver_id' => $lead->user_id,
-                        'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
-                    [
-                        'sender_id' => Auth::user()->id,
-                        'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                        'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Reatil Team.',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
-                ];
-                Notification::insert($notifications);
+                $notification = Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => $lead->user_id,
+                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
+                ]);
+                broadcast(new NotificationSent($notification));
+
+                $notification = Notification::create([
+                    'sender_id' => Auth::user()->id,
+                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Reatil Team.',
+                ]);
+                broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -141,17 +146,21 @@ class RetailController extends Controller
             ]);
         }
 
-        Notification::create([
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', Lead::find($request->lead_id)->zm_id)->first()->user_id,
             'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
         ]);
 
-        Notification::create([
+        broadcast(new NotificationSent($notification));
+
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
-            'receiver_id' =>Lead::find($request->lead_id)->user_id,
+            'receiver_id' => Lead::find($request->lead_id)->user_id,
             'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
         ]);
+
+        broadcast(new NotificationSent($notification));
 
         return response()->json(['message' => 'Quotes added successfully!']);
     }
@@ -168,42 +177,48 @@ class RetailController extends Controller
         switch ($action) {
             case 'complete':
                 $lead->is_payment_complete = true;
-                Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
                 ]);
-                Notification::create([
+                broadcast(new NotificationSent($notification));
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             case 'notify':
                 //////i write code send notification///////
-                Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
                 ]);
-                Notification::create([
+                broadcast(new NotificationSent($notification));
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             case 'cancel':
                 $lead->is_cancel = true;
-                Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
                 ]);
-                Notification::create([
+                broadcast(new NotificationSent($notification));
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
                 ]);
+                broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -237,16 +252,18 @@ class RetailController extends Controller
         $lead->final_status = true;
         $lead->save();
 
-        Notification::create([
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => $lead->user_id,
             'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
         ]);
-        Notification::create([
+        broadcast(new NotificationSent($notification));
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
             'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
         ]);
+        broadcast(new NotificationSent($notification));
         return response()->json(['success' => true, 'message' => 'Policy uploaded successfully']);
     }
 

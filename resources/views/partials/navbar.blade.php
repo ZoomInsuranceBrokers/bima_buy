@@ -3,7 +3,7 @@
     <a class="navbar-brand brand-logo" href="">
       <h3 style="font-weight: bold;color: white;color:#9a55ff;text-align: center;">Bima Buy</h3>
     </a>
-    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="{{asset('images/logo-mini.svg')}}"
+    <a class="navbar-brand brand-logo-mini" href="{{route('login')}}"><img src="{{asset('images/logo-mini.svg')}}"
         alt="logo" /></a>
   </div>
   <div class="navbar-menu-wrapper d-flex align-items-stretch">
