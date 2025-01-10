@@ -43,7 +43,7 @@ class ZmController extends Controller
 
     public function getLeadDetails($id)
     {
-        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'date_of_birth', 'mobile_no', 'vehicle_number')
+        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'date_of_birth', 'mobile_no', 'vehicle_number','email','claim_status','policy_type')
             ->with(['documents:id,lead_id,document_name,file_path'])
             ->find($id);
 
@@ -75,7 +75,7 @@ class ZmController extends Controller
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
                 ]);
-                // broadcast(new NotificationSent($notification));
+                broadcast(new NotificationSent($notification));
 
                 $update_message = [
                     'lead_id' =>Crypt::encrypt($lead->id),
@@ -106,7 +106,7 @@ class ZmController extends Controller
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
         }
 
-        // $lead->save();
+        $lead->save();
 
         return response()->json(['success' => true, 'message' => 'Action processed successfully']);
     }
@@ -202,6 +202,24 @@ class ZmController extends Controller
 
         // return $completedLeads;
         return view('zmpages.completedleads', compact('completedLeads'));
+    }
+
+    public function cancelLeads()
+    {
+        $cancelLeads = Lead::with([
+
+            'user' => function ($query) {
+                $query->select('id', 'first_name', 'last_name');
+            }
+        ])
+            ->where('is_cancel', 1)
+            ->where('zm_id', Auth::user()->zm_id)
+            ->select('id', 'user_id','first_name', 'last_name','mobile_no','is_issue','is_zm_verified', 'is_retail_verified', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        // return $cancelLeads;
+        return view('zmpages.cancelleads', compact('cancelLeads'));
     }
 
 }

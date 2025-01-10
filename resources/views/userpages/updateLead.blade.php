@@ -18,17 +18,20 @@
                     </div>
                 @endif
 
-                <form class="form-sample" method="POST" action="{{ route('user.update.lead', $lead->id) }}" enctype="multipart/form-data">
+                <form class="form-sample" method="POST" action="{{ route('user.update.lead', $lead->id) }}"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT') {{-- This is necessary for PUT requests in Laravel --}}
-                    
+
                     <p class="card-description">Personal Information</p>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">First Name<span class="text-danger">*</span></label>
+                                <label class="col-sm-3 col-form-label">First Name<span
+                                        class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input type="text" name="first_name" class="form-control" value="{{ old('first_name', $lead->first_name) }}" />
+                                    <input type="text" name="first_name" class="form-control"
+                                        value="{{ old('first_name', $lead->first_name) }}" />
                                     @error('first_name')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -37,9 +40,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Last Name<span class="text-danger">*</span></label>
+                                <label class="col-sm-3 col-form-label">Last Name<span
+                                        class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input type="text" name="last_name" class="form-control" value="{{ old('last_name', $lead->last_name) }}" />
+                                    <input type="text" name="last_name" class="form-control"
+                                        value="{{ old('last_name', $lead->last_name) }}" />
                                     @error('last_name')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -65,9 +70,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Date of Birth<span class="text-danger">*</span></label>
+                                <label class="col-sm-3 col-form-label">Date of Birth<span
+                                        class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input class="form-control" name="date_of_birth" type="date" value="{{ old('date_of_birth', $lead->date_of_birth) }}" />
+                                    <input class="form-control" name="date_of_birth" type="date"
+                                        value="{{ old('date_of_birth', $lead->date_of_birth) }}" />
                                     @error('date_of_birth')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -79,9 +86,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Mobile Number<span class="text-danger">*</span></label>
+                                <label class="col-sm-3 col-form-label">Mobile Number<span
+                                        class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input type="text" name="mobile_number" class="form-control" value="{{ old('mobile_number', $lead->mobile_no) }}" />
+                                    <input type="text" name="mobile_number" class="form-control"
+                                        value="{{ old('mobile_number', $lead->mobile_no) }}" />
                                     @error('mobile_number')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -94,9 +103,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Vehicle Number<span class="text-danger">*</span></label>
+                                <label class="col-sm-3 col-form-label">Vehicle Number<span
+                                        class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input type="text" name="vehicle_number" class="form-control" value="{{ old('vehicle_number', $lead->vehicle_number) }}" />
+                                    <input type="text" name="vehicle_number" class="form-control"
+                                        value="{{ old('vehicle_number', $lead->vehicle_number) }}" />
                                     @error('vehicle_number')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -108,17 +119,20 @@
                     <p class="card-description">Upload Vehicle Documents</p>
                     <div id="documents-container">
                         @foreach($lead->documents as $index => $document)
-                        <div class="form-group row document-upload">
-                            <label class="col-sm-3 col-form-label">Document {{ $index + 1 }} Name</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="documents[{{ $index }}][name]" class="form-control" value="{{ old('documents.' . $index . '.name', $document->document_name) }}" />
+                            <div class="form-group row document-upload">
+                                <label class="col-sm-3 col-form-label">Document {{ $index + 1 }} Name</label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="documents[{{ $index }}][name]" class="form-control"
+                                        value="{{ old('documents.' . $index . '.name', $document->document_name) }}" />
+                                </div>
+                                <label class="col-sm-3 col-form-label">Document {{ $index + 1 }} File</label>
+                                <div class="col-sm-9">
+                                    <input type="file" name="documents[{{ $index }}][file]" accept="image/*,application/pdf"
+                                        class="form-control">
+                                    <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank">Open
+                                        Document</a> {{-- Link to open in a new tab --}}
+                                </div>
                             </div>
-                            <label class="col-sm-3 col-form-label">Document {{ $index + 1 }} File</label>
-                            <div class="col-sm-9">
-                                <input type="file" name="documents[{{ $index }}][file]" accept="image/*,application/pdf" class="form-control">
-                                <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank">Open Document</a> {{-- Link to open in a new tab --}}
-                            </div>
-                        </div>
                         @endforeach
                     </div>
 
@@ -148,7 +162,7 @@
                     <div class="form-group row document-upload mt-3">
                         <label class="col-sm-3 col-form-label">Document ${documentCount} Name</label>
                         <div class="col-sm-9">
-                            <input type="text" name="documents[${documentCount - 1}][name]" class="form-control" placeholder="Enter Document Name" disabled>
+                            <input type="text" name="documents[${documentCount - 1}][name]" class="form-control" placeholder="Enter Document Name">
                         </div>
                         <label class="col-sm-3 col-form-label">Document ${documentCount} File</label>
                         <div class="col-sm-9">

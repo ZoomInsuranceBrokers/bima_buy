@@ -19,12 +19,22 @@
         <span class="menu-title">Dashboard</span>
         <i class="mdi mdi-home menu-icon"></i>
       </a>
+    </li>
 
+    <li class="nav-item">
+      <a class="nav-link" href="{{route('retail.cancelLeads')}}">
+        <span class="menu-title">Cancel leads</span>
+        <i class="mdi mdi-puzzle menu-icon"></i>
+      </a>
+    </li>
+    
     <li class="nav-item">
       <a class="nav-link" href="{{route('retail.completedLeads')}}">
         <span class="menu-title">Completed leads</span>
         <i class="mdi mdi-trophy menu-icon"></i>
       </a>
     </li>
+    
+
   </ul>
 </nav>

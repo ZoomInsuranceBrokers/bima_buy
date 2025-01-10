@@ -22,12 +22,17 @@ return new class extends Migration
             $table->string('gender');
             $table->date('date_of_birth');
             $table->string('mobile_no');
+            $table->string('email')->nullable();
             $table->string('vehicle_number');
+            $table->enum('claim_status', ['yes', 'no']);
+            $table->enum('policy_type', ['New', 'Fresh', 'Renewal']);
             $table->boolean('is_issue')->default(false);
             $table->boolean('is_zm_verified')->default(false);
             $table->boolean('is_retail_verified')->default(false);
             $table->boolean('is_cancel')->default(false);
             $table->boolean('is_accepted')->default(false);
+            $table->string('payment_link')->nullable();
+            $table->string('payment_receipt')->nullable();
             $table->boolean('is_payment_complete')->default(false);
             $table->boolean('final_status')->default(false);
             $table->timestamps();

@@ -29,18 +29,20 @@ class UserController extends Controller
         // Fetching pending leads with related quotes
         $pending_lead_details = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'lead_id','is_accepted', 'price','updated_at');
+                $query->select('id', 'lead_id', 'is_accepted', 'price', 'updated_at');
             }
         ])
             ->where('final_status', 0)
             ->where('user_id', $userId)
-            ->select('id', 'first_name', 'last_name', 'mobile_no', 'is_payment_complete', 'is_zm_verified', 'is_retail_verified', 'final_status', 'is_cancel', 'is_accepted','updated_at')
+            ->select('id', 'first_name', 'last_name', 'mobile_no', 'payment_receipt', 'is_payment_complete', 'is_zm_verified', 'is_retail_verified', 'final_status', 'is_cancel', 'is_accepted', 'payment_link', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->get();
 
         // return $pending_lead_details;
 
-    
+        // return $lead_details;
+
+
         return view('userpages.userdashboard', compact('lead_details', 'pending_lead_details'));
     }
 
@@ -52,17 +54,23 @@ class UserController extends Controller
 
     public function storeLead(Request $request)
     {
+
         // Validate the input data
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'gender' => 'required|in:Male,Female',
+            'policy_type' => 'required|in:new,fresh,renewal',
+            'email' => 'email',
+            'claim_status' => 'required|in:yes,no',
             'date_of_birth' => 'required|date',
             'vehicle_number' => 'required|string|max:255',
             'mobile_number' => 'required|numeric|digits:10',
-            'documents.*.name' => 'nullable|required_without:documents.*.file,null|string|max:255', // Name required only when file is uploaded
-            'documents.*.file' => 'nullable|file|mimes:jpeg,png,pdf|max:2048',
+            'documents.*.name' => 'nullable|required_without:documents.*.file,null|string|max:255',
+            'documents.*.file' => 'nullable|file|mimes:jpeg,png,pdf|max:10240',
         ]);
+
+
 
         // Save the lead information
         $lead = Lead::create([
@@ -70,6 +78,9 @@ class UserController extends Controller
             'zm_id' => Auth::user()->zm_id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
+            'policy_type' => $request->policy_type,
+            'email' => $request->email,
+            'claim_status' => $request->claim_status,
             'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
             'mobile_no' => $request->mobile_number,
@@ -94,10 +105,10 @@ class UserController extends Controller
             }
         }
 
-        $user_name = Auth::user()->first_name . ' ' . Auth::user()->last_name;
+        // $user_name = Auth::user()->first_name . ' ' . Auth::user()->last_name;
 
 
-        $notification=Notification::create([
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
             'message' => 'Lead created by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
@@ -106,7 +117,7 @@ class UserController extends Controller
 
         broadcast(new NotificationSent($notification));
 
-        return redirect()->back()->with('success', 'Lead created successfully with Trackid: ' . $lead->id);
+        return redirect()->route('user.dashboard')->with('success', 'Lead created successfully with Trackid: ' . $lead->id);
     }
 
     public function showFoamToUpdateLead($id)
@@ -117,11 +128,14 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Lead not found');
         }
 
+        // return $lead;
+
         return view('userpages.updateLead', compact('lead'));
     }
 
     public function updateLead(Request $request, $id)
     {
+
         // Validate the input data
         $request->validate([
             'first_name' => 'required|string|max:255',
@@ -177,7 +191,7 @@ class UserController extends Controller
             }
         }
 
-        $notification=Notification::create([
+        $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => $lead->is_zm_verified ? 4 : ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
             'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
@@ -189,17 +203,17 @@ class UserController extends Controller
     }
 
 
-    public function getQuoteDetails($leadId)
-    {
-        $quotes = Quote::where('lead_id', $leadId)->get();
+    // public function getQuoteDetails($leadId)
+    // {
+    //     $quotes = Quote::where('lead_id', $leadId)->get();
 
-        return response()->json([
-            'quotes' => $quotes
-        ]);
-    }
+    //     return response()->json([
+    //         'quotes' => $quotes
+    //     ]);
+    // }
 
 
-    public function submitQuoteAction()
+    public function submitQuoteAction(Request $request)
     {
         $quoteId = request('quote_id');
         $action = request('action');
@@ -222,8 +236,39 @@ class UserController extends Controller
                     'is_accepted' => 1,
                 ]);
 
+                $lead = Lead::find($quote->lead_id);
+                if ($request->hasFile('aadharCard') && $request->hasFile('panCard')) {
+                    // Upload the Aadhar Card
+                    $aadharFile = $request->file('aadharCard');
+                    $aadharPath = $aadharFile->store('documents/'. $lead->id, 'public');
+
+                    // Upload the PAN Card
+                    $panFile = $request->file('panCard');
+                    $panPath = $panFile->store('documents/'. $lead->id, 'public');
+
+                    // Save the Aadhar card document
+                    Document::create([
+                        'lead_id' => $quote->lead_id,
+                        'document_name' => 'Aadhar Card',
+                        'file_path' => $aadharPath,
+                    ]);
+
+                    // Save the PAN card document
+                    Document::create([
+                        'lead_id' => $quote->lead_id,
+                        'document_name' => 'Pan Card',
+                        'file_path' => $panPath,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Both Aadhar Card and PAN Card must be uploaded.',
+                    ]);
+                }
+
+
                 //////////send notification to zm ////////////
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
@@ -231,7 +276,7 @@ class UserController extends Controller
                 broadcast(new NotificationSent($notification));
 
                 //////////send notification to retail team////////////
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
@@ -239,18 +284,18 @@ class UserController extends Controller
                 broadcast(new NotificationSent($notification));
                 break;
             case 'ask_for_another':
-                 //////////send notification to zm ////////////
-                 $notification=Notification::create([
+                //////////send notification to zm ////////////
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
-                    'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
+                    'message' => 'Regional cordinator  ask another quote for lead id  ' . $quote->lead_id,
                 ]);
                 broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
-                    'message' => 'Use Ask another quote for Lead id ' . $quote->lead_id,
+                    'message' => 'Regional cordinator  ask another quote for lead id  ' . $quote->lead_id,
                 ]);
                 broadcast(new NotificationSent($notification));
                 break;
@@ -259,18 +304,18 @@ class UserController extends Controller
                 Lead::where('id', $quote->lead_id)->update([
                     'is_cancel' => 1,
                 ]);
-                 //////////send notification to zm ////////////
-                 $notification=Notification::create([
+                //////////send notification to zm ////////////
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
-                    'receiver_id' =>ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
-                    'message' => 'Lead'.$quote->lead_id.''.'has been cancelled by Rc',
+                    'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
+                    'message' => 'Lead' . $quote->lead_id . '' . 'has been cancelled by Rc',
                 ]);
                 broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
-                    'message' => 'Lead Id '.$quote->lead_id.''.' has been cancelled by Rc',
+                    'message' => 'Lead Id ' . $quote->lead_id . '' . ' has been cancelled by Rc',
                 ]);
                 broadcast(new NotificationSent($notification));
                 break;
@@ -299,6 +344,7 @@ class UserController extends Controller
             ->select('id', 'first_name', 'last_name', 'mobile_no', 'updated_at')
             ->where('user_id', Auth::user()->id)
             ->where('final_status', 1)
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         // return $completedLeads;
@@ -314,5 +360,52 @@ class UserController extends Controller
     public function wallet()
     {
         return view('userpages.wallet');
+    }
+
+
+    public function uploadPaymentScreenShort($id, Request $request)
+    {
+        $request->validate([
+            'paymentScreenShort' => 'required|file|mimes:pdf,jpeg,jpg,png,gif,bmp,tiff',
+        ]);
+
+        $lead = Lead::find($id);
+
+        if (!$lead) {
+            return response()->json(['success' => false, 'message' => 'Lead not found'], 404);
+        }
+
+        $path = $request->file('paymentScreenShort')->store('Payments');
+
+        $lead->update([
+            'payment_receipt' => $path,
+        ]);
+
+        $notification = Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => 4,
+            'message' => 'Payment Screen Short is uploaded for Lead ID ' . $lead->id . '. Please Verify.',
+        ]);
+        broadcast(new NotificationSent($notification));
+
+        $notification = Notification::create([
+            'sender_id' => Auth::user()->id,
+            'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
+            'message' => 'Payment Screen Short is uploaded for Lead ID ' . $lead->id . '.Please Verify.',
+        ]);
+        broadcast(new NotificationSent($notification));
+
+        return response()->json(['success' => true, 'message' => 'Payment screen short uploaded successfully']);
+    }
+
+    public function cancelLeads()
+    {
+        $leads = Lead::where('is_cancel', 1)
+            ->where('user_id', Auth::user()->id)
+            ->select('id', 'first_name', 'last_name', 'mobile_no', 'is_issue', 'is_zm_verified', 'is_retail_verified', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return view('userpages.cancelLeads', compact('leads'));
     }
 }

@@ -13,12 +13,11 @@ class Quote extends Model
         'lead_id',
         'quote_name',
         'price',
-        'description',
+        'file_path',
         'is_accepted',
         'payment_status',
     ];
     protected $casts = [
-        'description' => 'array',
         'is_accepted' => 'boolean',
         'payment_status' => 'boolean',
     ];

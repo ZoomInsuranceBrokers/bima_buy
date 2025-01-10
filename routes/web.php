@@ -23,6 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/notifications/fetch', [LoginController::class, 'fetchNotifications'])->name('notifications.fetch');
     Route::post('/notifications/mark-as-read', [LoginController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/payment/screenshort/link/{id}', [RetailController::class, 'getPaymentScreenShortAndLink']);
+
 });
 
 /////////////////////////////////////////admin////////////////////////////////////////
@@ -42,11 +44,12 @@ Route::middleware(['auth', ValidRc::class])->group(function () {
     Route::get('/completed/lead', [UserController::class, 'completedLead'])->name('user.completedLead');
     Route::get('/policy/copy', [UserController::class, 'policyCopy'])->name('user.policyCopy');
     Route::get('/user/wallet', [UserController::class, 'wallet'])->name('user.wallet');
-    Route::get('/update/lead/{id}', [UserController::class, 'showFoamToUpdateLead'])->name('user.show.foam.to.updateLead');
+    Route::get('/update/lead/{id}', [UserController::class, 'showFoamToUpdateLead'])->name('user.show.form.to.updateLead');
     Route::put('/user/lead/update/{id}', [UserController::class, 'updateLead'])->name('user.update.lead');
     Route::get('/quote-details/{iid}', [RetailController::class, 'getQuotes']);
-    Route::get('/user/quote-details/{leadId}', [UserController::class, 'getQuoteDetails'])->name('user.quote.details');
     Route::post('/user/submit-quote-action', [UserController::class, 'submitQuoteAction'])->name('user.submit.quote.action');
+    Route::post('/leads/{id}/upload-Payment-Scree-Short', [UserController::class, 'uploadPaymentScreenShort'])->name('user.upload.payment.screen.short');
+    Route::get('/user/cancel/leads', [UserController::class, 'cancelLeads'])->name('user.cancelLeads');
 
 });
 /////////////////////////////////////////zm////////////////////////////////////////
@@ -58,6 +61,8 @@ Route::middleware(['auth', ValidZm::class])->group(function () {
     Route::post('/leads/action/{id}', [ZmController::class, 'postLeadAction'])->name('zm.leadAction');
     Route::get('/zm/policy/copy', [ZmController::class, 'policyCopy'])->name('zm.policyCopy');
     Route::get('/zm/completed/lead', [ZmController::class, 'completedLeads'])->name('zm.completedLeads');
+    Route::get('/zm/cancel/leads', [ZmController::class, 'cancelLeads'])->name('zm.cancelLeads');
+
 });
 
 
@@ -79,7 +84,10 @@ Route::middleware(['auth', ValidRetail::class])->group(function () {
     Route::get('/retail/completed/lead', [RetailController::class, 'completedLeads'])->name('retail.completedLeads');
     Route::post('/leads/action/retail/{id}', [RetailController::class, 'postLeadAction'])->name('retail.leadAction');
     Route::post('/quotes', [RetailController::class, 'store']);
+    Route::post('/save/paymentlink/{id}',[RetailController::class,'savePaymentLink']);
     Route::post('/leads/payment/{id}', [RetailController::class, 'upadtePaymentStatus']);
     Route::post('/leads/{id}/upload-policy', [RetailController::class, 'uploadPolicy']);
+    Route::get('/retail/cancel/leads', [RetailController::class, 'cancelLeads'])->name('retail.cancelLeads');
+
 
 });

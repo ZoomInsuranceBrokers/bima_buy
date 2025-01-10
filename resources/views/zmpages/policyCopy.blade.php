@@ -101,11 +101,11 @@
                                     `);
                                 $('#action-buttons').removeClass('d-none');
                             } else {
-                                alert('No policy found.');
+                                Swal.fire('No policy found.');
                             }
                         },
                         error: function () {
-                            alert('An error occurred. Please try again.');
+                            Swal.fire('An error occurred. Please try again.');
                         }
                     });
                 }

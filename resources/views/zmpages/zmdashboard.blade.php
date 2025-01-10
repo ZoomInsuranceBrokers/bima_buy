@@ -23,7 +23,7 @@
         <div class="col-12 grid-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Recent Leads</h4>
+                    <h4 class="card-title">Pending Leads</h4>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -43,7 +43,7 @@
                             <tbody>
                                 @forelse ($leads as $lead)
                                     <tr>
-                                        <td>{{$lead->user->first_name. ' ' . $lead->user->last_name}}</td>
+                                        <td>{{$lead->user->first_name . ' ' . $lead->user->last_name}}</td>
                                         <td>{{$lead->id}}</td>
                                         <td>{{$lead->first_name . ' ' . $lead->last_name}}</td>
                                         <td>{{$lead->user->mobile}}</td>
@@ -113,7 +113,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                    <td colspan="8" class="text-center">No leads have been generated yet.</td>
+                                        <td colspan="8" class="text-center">No leads have been generated yet.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -132,7 +132,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Lead Details</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -140,7 +140,7 @@
                 <!-- Details will be populated here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" id="submitAction" class="btn btn-primary">Submit</button>
             </div>
         </div>
@@ -166,6 +166,75 @@
     </div>
 </div>
 
+@push('styles')
+    <style>
+        #quotesContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .quote-card {
+            flex: 1 1 calc(33.33% - 20px);
+            /* Make each card take 1/3 of the row */
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #fff;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .quote-card h5 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .quote-card p {
+            margin: 5px 0;
+        }
+
+        .quote-card a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .quote-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Optional: Hover effect for each card */
+        .quote-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .quote-fields {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Media query to make the layout responsive on smaller screens */
+        @media (max-width: 768px) {
+            .quote-card {
+                flex: 1 1 calc(50% - 20px);
+                /* 2 quotes per row on medium screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quote-card {
+                flex: 1 1 100%;
+                /* 1 quote per row on small screens */
+            }
+        }
+    </style>
+@endpush
+
+
 @push('scripts')
     <script>
         $(document).ready(function () {
@@ -179,65 +248,73 @@
                         // Iterate over the documents to create table rows
                         data.lead.documents.forEach((doc) => {
                             imagesHtml += `
-                                                                                    <tr>
-                                                                                        <td>${doc.document_name}</td>
-                                                                                        <td><a href="${doc.file_path}" target="_blank">View</a></td>
-                                                                                    </tr>
-                                                                                `;
+                                                                                        <tr>
+                                                                                            <td>${doc.document_name}</td>
+                                                                                            <td><a href="{{ url('storage/${doc.file_path}') }}" target="_blank">View</a></td>
+                                                                                        </tr>
+                                                                                    `;
                         });
 
                         // Populate modal with lead and images details
                         $('#leadDetailsModal .modal-body').html(`
-                                                                                <div class="row">
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>First Name:</strong> ${data.lead.first_name}</p>
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>First Name:</strong> ${data.lead.first_name}</p>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Last Name:</strong> ${data.lead.last_name}</p>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>Last Name:</strong> ${data.lead.last_name}</p>
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Mobile No:</strong> ${data.lead.mobile_no}</p>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Vehicle No:</strong> ${data.lead.vehicle_number}</p>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                                <div class="row">
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>Mobile No:</strong> ${data.lead.mobile_no}</p>
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Email ID:</strong> ${data.lead.email ?? 'N/A'}</p>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Date of Birth:</strong> ${data.lead.date_of_birth}</p>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>Vehicle No:</strong> ${data.lead.vehicle_number}</p>
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Policy Type:</strong> ${data.lead.policy_type}</p>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <p><strong>Claim Staus:</strong> ${data.lead.claim_status}</p>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                                <div class="row">
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>Email ID:</strong> ${data.lead.email ?? 'N/A'}</p>
+                                                                                    <p><strong>Documents:</strong></p>
+                                                                                    <table class="table table-bordered">
+                                                                                        <thead>
+                                                                                            <tr>
+                                                                                                <th>File Name</th>
+                                                                                                <th>Action</th>
+                                                                                            </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                            ${imagesHtml}
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                    <div class="form-group">
+                                                                                        <label for="action">Select Action:</label>
+                                                                                        <select id="action" class="form-control">
+                                                                                            <option value="">-- Select --</option>
+                                                                                            <option value="insufficient_details">Send to user for insufficient details</option>
+                                                                                            <option value="verified">I verified and send to retail team</option>
+                                                                                            <option value="cancel">Cancel</option>
+                                                                                        </select>
                                                                                     </div>
-                                                                                    <div class="col-md-6">
-                                                                                        <p><strong>Date of Birth:</strong> ${data.lead.date_of_birth}</p>
+                                                                                    <div class="form-group d-none" id="insufficientDetailsMessage">
+                                                                                        <label for="insufficientMessage">Enter your message:</label>
+                                                                                        <textarea id="insufficientMessage" class="form-control" rows="3"></textarea>
                                                                                     </div>
-                                                                                </div>
-                                                                                <p><strong>Documents:</strong></p>
-                                                                                <table class="table table-bordered">
-                                                                                    <thead>
-                                                                                        <tr>
-                                                                                            <th>File Name</th>
-                                                                                            <th>Action</th>
-                                                                                        </tr>
-                                                                                    </thead>
-                                                                                    <tbody>
-                                                                                        ${imagesHtml}
-                                                                                    </tbody>
-                                                                                </table>
-                                                                                <div class="form-group">
-                                                                                    <label for="action">Select Action:</label>
-                                                                                    <select id="action" class="form-control">
-                                                                                        <option value="">-- Select --</option>
-                                                                                        <option value="insufficient_details">Send to user for insufficient details</option>
-                                                                                        <option value="verified">I verified and send to retail team</option>
-                                                                                        <option value="cancel">Cancel</option>
-                                                                                    </select>
-                                                                                </div>
-                                                                                <div class="form-group d-none" id="insufficientDetailsMessage">
-                                                                                    <label for="insufficientMessage">Enter your message:</label>
-                                                                                    <textarea id="insufficientMessage" class="form-control" rows="3"></textarea>
-                                                                                </div>
-                                                                            `);
+                                                                                `);
 
                         // Set the lead ID as a data attribute on the modal
                         $('#leadDetailsModal').data('id', leadId);
@@ -254,7 +331,7 @@
                             }
                         });
                     } else {
-                        alert(data.message);
+                        Swal.fire(data.message);
                     }
                 });
             };
@@ -266,12 +343,12 @@
                 const message = $('#insufficientMessage').val();
 
                 if (!action) {
-                    alert('Please select an action to proceed.');
+                    Swal.fire('Please select an action to proceed.');
                     return;
                 }
 
                 if (action === 'insufficient_details' && !message.trim()) {
-                    alert('Please provide a message for insufficient details.');
+                    Swal.fire('Please provide a message for insufficient details.');
                     return;
                 }
 
@@ -281,11 +358,11 @@
                     message: action === 'insufficient_details' ? message : null
                 }, function (response) {
                     if (response.success) {
-                        alert('Form submitted successfully!');
+                        Swal.fire('Form submitted successfully!');
                         $('#leadDetailsModal').modal('hide');
                         location.reload();
                     } else {
-                        alert(response.message);
+                        Swal.fire(response.message);
                     }
                 });
             });
@@ -301,29 +378,28 @@
                         quotesContainer.empty();
 
                         // Populate existing quotes
-                        response.quotes.forEach(quote => {
-                            let features = quote.description.map(feature =>
-                                `<li>${feature}</li>`
-                            ).join('');
-
-                            quotesContainer.append(`
-                                                                                <div class="quote-item mb-4">
-                                                                                    <div class="d-flex justify-content-between">
-                                                                                        <p><strong>Policy Name:</strong> ${quote.quote}</p>
-                                                                                    </div>
-                                                                                    <p><strong>Features:</strong></p>
-                                                                                    <ul>${features}</ul>
-                                                                                     <p><strong>Price:</strong> ₹${quote.price}</p>
-                                                                                    <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
-                                                                                </div>
-                                                                            `);
+                        response.forEach(function (quote) {
+                            const quoteItem = `
+                                            <div class="quote-card col-md-4">
+                                                <h5>${quote.quote_name}</h5>
+                                                <p><strong>Price:</strong> ₹${quote.price}</p>
+                                                <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Not Accepted'}</p>
+                                                <p><strong>Payment Status:</strong> ${quote.payment_status ? 'Paid' : 'Unpaid'}</p>
+                                                <p><strong>Document:</strong> 
+                                                    ${quote.file_path ? `<a href="${quote.temporary_url}" target="_blank">View</a>` : 'No file attached'}
+                                                </p>
+                                            </div>
+                                            <hr>
+                                             `;
+                            // Append the quote item to the modal list
+                            quotesContainer.append(quoteItem);
                         });
-                        $('#leadIdInput').val(leadId);
+                      
                         // Show the modal
                         $('#quoteModal').modal('show');
                     },
                     error: function () {
-                        alert('Failed to fetch quote details.');
+                        Swal.fire('Failed to fetch quote details.');
                     }
                 });
             };

@@ -33,7 +33,11 @@
                                             <label class="badge badge-success">Verified</label>
                                         </td>
                                         <td>
-                                            {{$lead->quotes[0]->price}}
+                                            @if(!empty($lead->quotes) && $lead->quotes->isNotEmpty())
+                                                {{$lead->quotes->first()->price}}
+                                            @else
+                                                N/A
+                                            @endif
                                         </td>
                                         <td><button type="button" class="btn btn-gradient-info btn-sm"
                                                 onclick="showQuoteDetails({{$lead->id}})">View Details</button>
@@ -90,22 +94,22 @@
                         ).join('');
 
                         quotesContainer.append(`
-                                                        <div class="quote-item mb-4">
-                                                            <div class="d-flex justify-content-between">
-                                                                <p><strong>Policy Name:</strong> ${quote.quote}</p>
+                                                            <div class="quote-item mb-4">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <p><strong>Policy Name:</strong> ${quote.quote}</p>
+                                                                </div>
+                                                                <p><strong>Features:</strong></p>
+                                                                <ul>${features}</ul>
+                                                                 <p><strong>Price:</strong> ₹${quote.price}</p>
+                                                                <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
                                                             </div>
-                                                            <p><strong>Features:</strong></p>
-                                                            <ul>${features}</ul>
-                                                             <p><strong>Price:</strong> ₹${quote.price}</p>
-                                                            <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
-                                                        </div>
-                                                    `);
+                                                        `);
                     });
                     // Show the modal
                     $('#quoteModal').modal('show');
                 },
                 error: function () {
-                    alert('Failed to fetch quote details.');
+                    Swal.fire('Failed to fetch quote details.');
                 }
             });
         }

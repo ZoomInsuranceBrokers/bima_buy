@@ -6,7 +6,7 @@
         <div class="col-12 grid-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Pending Leads</h4>
+                    <h4 class="card-title">Completed Leads</h4>
                     <div class="table-responsive">
                         @if($completedLeads->isEmpty())
                             <p>No leads completed yet.</p>
@@ -105,7 +105,7 @@
                     $('#quoteModal').modal('show');
                 },
                 error: function () {
-                    alert('Failed to fetch quote details.');
+                    Swal.fire('Failed to fetch quote details.');
                 }
             });
         }

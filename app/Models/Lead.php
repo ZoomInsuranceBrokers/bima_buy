@@ -21,12 +21,17 @@ class Lead extends Model
         'gender', 
         'date_of_birth',
         'mobile_no',
+        'email',
         'vehicle_number',
+        'claim_status',
+        'policy_type',
         'is_issue',
         'is_zm_verified',
         'is_retail_verified',
         'is_cancel',
         'is_accepted',
+        'payment_link',
+        'payment_receipt',
         'is_payment_complete',
         'final_status'
     

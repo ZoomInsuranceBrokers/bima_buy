@@ -30,6 +30,7 @@
         <ul class="nav flex-column sub-menu">
           <li class="nav-item"> <a class="nav-link" href="{{route('user.createLead')}}">Create a new lead</a></li>
           <li class="nav-item"> <a class="nav-link" href="{{route('user.completedLead')}}">Completed leads</a></li>
+          <li class="nav-item"> <a class="nav-link" href="{{route('user.cancelLeads')}}">Cancel leads</a></li>
         </ul>
       </div>
     </li>

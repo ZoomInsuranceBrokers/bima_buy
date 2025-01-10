@@ -14,24 +14,35 @@
         <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
       </a>
     </li>
+    
     <li class="nav-item">
       <a class="nav-link" href="{{route('zm.dashboard')}}">
         <span class="menu-title">Dashboard</span>
         <i class="mdi mdi-home menu-icon"></i>
       </a>
     </li>
+
     <li class="nav-item">
       <a class="nav-link" href="{{route('zm.policyCopy')}}">
         <span class="menu-title">Policy Copy</span>
         <i class="mdi mdi-newspaper menu-icon"></i>
       </a>
     </li>
+
     <li class="nav-item">
       <a class="nav-link" href="{{route('zm.completedLeads')}}">
         <span class="menu-title">Completed leads</span>
         <i class="mdi mdi-trophy menu-icon"></i>
       </a>
     </li>
+
+    <li class="nav-item">
+      <a class="nav-link" href="{{route('zm.cancelLeads')}}">
+        <span class="menu-title">Cancel leads</span>
+        <i class="mdi mdi-puzzle menu-icon"></i>
+      </a>
+    </li>
+
     <li class="nav-item">
       <a class="nav-link" href="{{route('zm.wallet')}}">
         <span class="menu-title">Wallet</span>

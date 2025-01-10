@@ -22,7 +22,7 @@ class UpdateLead implements ShouldBroadcastNow
     public function __construct($update_lead)
     {
         $this->update_lead = $update_lead;
-        print_r($this->update_lead);
+        // print_r($this->update_lead);
     }
 
     /**
