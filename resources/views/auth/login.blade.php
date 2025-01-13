@@ -26,6 +26,12 @@
             font-size: 0.875em;
             color: #fe7c96;
         }
+        .success-message{
+            width: 100%;
+            margin-top: 0.30rem;
+            font-size: 0.875em;
+            color: #42992f;
+        }
 
         .error-input {
             border-color: #fe7c96;
@@ -48,6 +54,20 @@
                             </div>
                             <h4>Hello! let's get started</h4>
                             <h6 class="font-weight-light">Sign in to continue.</h6>
+                            @if(session('status'))
+                            <div class="success-message">
+                                {{ session('status') }}
+                            </div>
+                            @endif
+
+                            <!-- Display error message -->
+                            @if($errors->any())
+                            <div class="error-message">
+                                @foreach($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                                @endforeach
+                            </div>
+                            @endif
                             <form class="pt-3" method="POST" action="{{ route('login.post') }}">
                                 @csrf
                                 <div class="form-group">
@@ -78,7 +98,7 @@
                                             <input type="checkbox" class="form-check-input" name="remember" {{ old('remember') ? 'checked' : '' }}> Keep me signed in
                                         </label>
                                     </div>
-                                    <a href="#" class="auth-link text-black">Forgot password?</a>
+                                    <a href="{{ route('password.request') }}" class="auth-link text-black">Forgot password?</a>
                                 </div>
                                 <div class="mt-3">
                                     <button type="submit"

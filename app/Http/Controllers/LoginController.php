@@ -6,8 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Notification;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class LoginController extends Controller
 {
@@ -191,6 +197,81 @@ class LoginController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Notification not found or unauthorized'], 403);
     }
+
+    public function showLinkRequestForm()
+    {
+        return view('auth.forgot-password');
+    }
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        // Generate password reset token
+        $user = User::where('email', $request->email)->first();
+        $token = Str::random(60);
+        $expiresAt = Carbon::now()->addMinutes(10);
+
+        // Save token and expiration time to a password_resets table
+        \DB::table('password_reset_tokens')->insert([
+            'email' => $user->email,
+            'token' => $token,
+            'created_at' => Carbon::now(),
+            'expires_at' => $expiresAt,
+        ]);
+
+        // Send reset email
+        Mail::to($user->email)->send(new ResetPasswordMail($token));
+
+        return back()->with('status', 'We have emailed your password reset link!');
+    }
+
+    public function showResetForm($token)
+    {
+        return view('auth.reset-password', compact('token'));
+    }
+
+    public function reset(Request $request)
+    {
+        // Validate the new password and token
+        $request->validate([
+            'password' => 'required|confirmed|min:6',
+            'token' => 'required',
+        ]);
+
+        // dd($request->token);
+        // Check token expiration
+        $passwordReset = DB::table('password_reset_tokens')
+            ->where('token', $request->token)
+            ->orderBy('created_at', 'desc') // Order by the most recent request
+            ->first();
+
+        // dd($passwordReset);
+        // if (!$passwordReset || !Hash::check($request->token, $passwordReset->token) || Carbon::parse($passwordReset->created_at)->addMinutes(10)->isPast()) {
+        //     return redirect()->route('password.request')->withErrors(['token' => 'This password reset link is invalid or expired.']);
+        // }
+
+        if (!$passwordReset || Carbon::parse($passwordReset->created_at)->addMinutes(10)->isPast()) {
+            return redirect()->route('password.request')->withErrors(['token' => 'This password reset link is invalid or expired.']);
+        }
+
+        // Find user and update the password
+        $user = User::where('email', $passwordReset->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'User not found.']);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Delete the reset token after use
+        DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+
+        return redirect()->route('login')->with('status', 'Your password has been reset!');
+    }
+
 
 
     public function logout()

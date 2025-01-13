@@ -14,7 +14,13 @@ use App\Http\Middleware\ValidRetail;
 // });
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+Route::get('forgot-password', [LoginController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('forgot-password', [LoginController::class, 'sendResetLink'])->name('password.email');
+Route::get('reset-password/{token}', [LoginController::class, 'showResetForm'])->name('password.reset');
+Route::post('reset-password', [LoginController::class, 'reset'])->name('password.update');
 
 
 Route::middleware('auth')->group(function () {
