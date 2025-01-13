@@ -4,8 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\ZonalManager;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\AdminUserSeeder;
+use Database\Seeders\RetailUserSeeder;
+use Database\Seeders\ZonalManagerSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,17 +19,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
-        Role::create(['name' => 'Admin']);
-        Role::create(['name' => 'User']);
-        Role::create(['name' => 'ZonalManager']);
-        Role::create(['name' => 'Retail']);
-        Role::create(['name' => 'Accounts']);
+        $this->call([
+            RoleSeeder::class,
+            AdminUserSeeder::class,
+            RetailUserSeeder::class,
+            ZonalManagerSeeder::class,
+        ]);
     }
 }

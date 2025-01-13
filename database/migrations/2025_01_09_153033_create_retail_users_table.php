@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('retail_users', function (Blueprint $table) {
             $table->id();  // auto-increment primary key
-            $table->unsignedBigInteger('user_id');  // This is the column for the foreign key
+            $table->unsignedBigInteger('user_id')->nullable();  // This is the column for the foreign key
             $table->string('name');
             $table->timestamps();
     

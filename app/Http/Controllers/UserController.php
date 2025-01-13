@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\Document;
+use App\Models\RetailUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;

@@ -136,51 +136,7 @@ class RetailController extends Controller
 
         return response()->json($quotes);
     }
-
-
-    // public function store(Request $request)
-    // {
-
-    //     $request->validate([
-    //         'lead_id' => 'required|exists:leads,id',
-    //         'quotes' => 'required|array',
-    //         'quotes.*.quote_name' => 'required|string',
-    //         'quotes.*.features' => 'required|array',
-    //         'quotes.*.features.*' => 'string',
-    //         // 'quotes.*.prices' => 'required|array',
-    //         'quotes.*.prices.*' => 'numeric',
-    //     ]);
-
-    //     foreach ($request->quotes as $quoteData) {
-    //         $quote = Quote::create([
-    //             'lead_id' => $request->lead_id,
-    //             'quote_name' => $quoteData['quote_name'],
-    //             'price' => $quoteData['price'],
-    //             'description' => $quoteData['features'],
-    //         ]);
-    //     }
-
-    //     $notification = Notification::create([
-    //         'sender_id' => Auth::user()->id,
-    //         'receiver_id' => ZonalManager::where('id', Lead::find($request->lead_id)->zm_id)->first()->user_id,
-    //         'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
-    //     ]);
-
-    //     broadcast(new NotificationSent($notification));
-
-    //     $notification = Notification::create([
-    //         'sender_id' => Auth::user()->id,
-    //         'receiver_id' => Lead::find($request->lead_id)->user_id,
-    //         'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
-    //     ]);
-
-    //     broadcast(new NotificationSent($notification));
-
-    //     return response()->json(['message' => 'Quotes added successfully!']);
-    // }
-
-
-
+   
     public function store(Request $request)
     {
         // Validation for the incoming request (including file upload)
