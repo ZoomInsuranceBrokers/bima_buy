@@ -210,7 +210,7 @@ class LoginController extends Controller
 
         // Generate password reset token
         $user = User::where('email', $request->email)->first();
-        $token = Str::random(60);
+        $token = Hash::make(Str::random(60));
         $expiresAt = Carbon::now()->addMinutes(10);
 
         // Save token and expiration time to a password_resets table
@@ -236,7 +236,7 @@ class LoginController extends Controller
     {
         // Validate the new password and token
         $request->validate([
-            'password' => 'required|confirmed|min:6',
+            'password' => 'required|confirmed|min:8',
             'token' => 'required',
         ]);
 

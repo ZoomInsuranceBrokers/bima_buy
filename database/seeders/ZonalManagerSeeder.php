@@ -23,7 +23,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Naidu',
                 'gender' => 'female',
                 'email' => 'vanshika@novelhealthtech.com',
-                'mobile' => '8929292718',
+                'mobile' => '8448719002',
                 'image_path' => 'profile_photos/default_photos/female.jpg',
             ],
             [
@@ -32,7 +32,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Manchanda',
                 'gender' => 'male',
                 'email' => 'deepanshu.manchanda@novelhealthtech.com',
-                'mobile' => '9837461839',
+                'mobile' => '8448288204',
                 'image_path' => 'profile_photos/default_photos/male.jpg',
             ],
             [
@@ -41,7 +41,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Yadav',
                 'gender' => 'male',
                 'email' => 'sandeep.yadav@novelhealthtech.com',
-                'mobile' => '9876543211',
+                'mobile' => '8448288203',
                 'image_path' => 'profile_photos/default_photos/male.jpg',
             ],
             [
@@ -50,7 +50,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Singh Negi',
                 'gender' => 'male',
                 'email' => 'virender.negi@novelhealthtech.com',
-                'mobile' => '9876543214',
+                'mobile' => '8448288206',
                 'image_path' => 'profile_photos/default_photos/male.jpg',
             ],
             [
@@ -59,7 +59,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Singh',
                 'gender' => 'male',
                 'email' => 'saksham.singh@novelhealthtech.com',
-                'mobile' => '9876543212',
+                'mobile' => '8527776755',
                 'image_path' => 'profile_photos/default_photos/male.jpg',
             ],
             [
@@ -68,7 +68,7 @@ class ZonalManagerSeeder extends Seeder
                 'last_name' => 'Santhosh',
                 'gender' => 'female',
                 'email' => 'santhosh@novelhealthtech.com',
-                'mobile' => '9876543213',
+                'mobile' => '8527775635',
                 'image_path' => 'profile_photos/default_photos/female.jpg',
             ],
            
