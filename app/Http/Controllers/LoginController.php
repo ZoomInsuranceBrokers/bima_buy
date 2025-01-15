@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\Session;
+use App\Mail\OtpMail;
 
 class LoginController extends Controller
 {
@@ -44,9 +46,17 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->remember)) {
+            $user = Auth::user();
 
-            // echo Auth::user()->role_id;
-            // exit;
+
+            if ($user->first_login) {
+                $otp = rand(100000, 999999);;
+                Session::put('otp', $otp);
+                Session::put('otp_generated_at', now());
+                Mail::to($user->email)->send(new OtpMail($otp));
+                return redirect()->route('otp.form');
+            }
+
             switch (Auth::user()->role_id) {
                 case 1: // Admin
                     return redirect()->route('admin.dashboard');
@@ -74,6 +84,55 @@ class LoginController extends Controller
             }
         }
     }
+
+    public function showOtpForm()
+    {
+        return view('auth.otp');
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $user = Auth::user();
+        $request->validate([
+            'otp' => 'required|numeric|digits:6',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $otpGeneratedAt = Session::get('otp_generated_at');
+        $otp = Session::get('otp');
+
+        if ($otp && $request->otp == $otp) {
+            if (now()->diffInMinutes($otpGeneratedAt) <= 10) {
+                $user->password = bcrypt($request->password);
+                $user->first_login = false;
+                $user->save();
+
+                // Clear OTP and session data
+                Session::forget('otp');
+                Session::forget('otp_generated_at');
+
+                // Redirect to appropriate dashboard
+                switch ($user->role_id) {
+                    case 1: // Admin
+                        return redirect()->route('admin.dashboard');
+                    case 2: // Users
+                        return redirect()->route('user.dashboard');
+                    case 3: // ZM
+                        return redirect()->route('zm.dashboard');
+                    case 4: // Retail
+                        return redirect()->route('retail.dashboard');
+                    default:
+                        return redirect()->route('user1.dashboard');
+                }
+            } else {
+                // OTP expired
+                return back()->withErrors(['otp' => 'OTP has expired. Please try again.'])->onlyInput('otp');
+            }
+        } else {
+            return back()->withErrors(['otp' => 'Invalid OTP.'])->onlyInput('otp');
+        }
+    }
+
 
     public function profile()
     {

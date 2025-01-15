@@ -24,6 +24,8 @@ Route::post('reset-password', [LoginController::class, 'reset'])->name('password
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/otp-form', [LoginController::class, 'showOtpForm'])->name('otp.form');
+    Route::post('/verify-otp', [LoginController::class, 'verifyOtp'])->name('otp.verify');
     Route::get('profile', [LoginController::class, 'profile'])->name('profile');
     Route::post('update', [LoginController::class, 'update'])->name('profile.update');
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -90,7 +92,7 @@ Route::middleware(['auth', ValidRetail::class])->group(function () {
     Route::get('/retail/completed/lead', [RetailController::class, 'completedLeads'])->name('retail.completedLeads');
     Route::post('/leads/action/retail/{id}', [RetailController::class, 'postLeadAction'])->name('retail.leadAction');
     Route::post('/quotes', [RetailController::class, 'store']);
-    Route::post('/save/paymentlink/{id}',[RetailController::class,'savePaymentLink']);
+    Route::post('/save/paymentlink/{id}', [RetailController::class, 'savePaymentLink']);
     Route::post('/leads/payment/{id}', [RetailController::class, 'upadtePaymentStatus']);
     Route::post('/leads/{id}/upload-policy', [RetailController::class, 'uploadPolicy']);
     Route::get('/retail/cancel/leads', [RetailController::class, 'cancelLeads'])->name('retail.cancelLeads');

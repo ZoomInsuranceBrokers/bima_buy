@@ -9,21 +9,16 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPasswordMail extends Mailable
+class OtpMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public $token;
-
-    public function __construct($token)
+    public $otp;
+    /**
+     * Create a new message instance.
+     */
+    public function __construct($otp)
     {
-        $this->token = $token;
-    }
-
-    public function build()
-    {
-        return $this->subject('Password Reset Request')
-                    ->view('auth.email-foam');
+        $this->otp = $otp;
     }
 
     /**
@@ -32,7 +27,7 @@ class ResetPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Reset Password Mail',
+            subject: 'Your OTP for First Login',
         );
     }
 
@@ -42,7 +37,7 @@ class ResetPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.password-reset-link.blade',
+            view: 'emails.otp',
         );
     }
 
