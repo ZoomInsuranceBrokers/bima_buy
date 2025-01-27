@@ -116,7 +116,7 @@ class UserController extends Controller
         ]);
         // event(new LeadCreated($user_name));
 
-        broadcast(new NotificationSent($notification));
+        // broadcast(new NotificationSent($notification));
 
         return redirect()->route('user.dashboard')->with('success', 'Lead created successfully with Trackid: ' . $lead->id);
     }
@@ -198,7 +198,7 @@ class UserController extends Controller
             'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
         ]);
 
-        broadcast(new NotificationSent($notification));
+        // broadcast(new NotificationSent($notification));
 
         return redirect()->route('user.dashboard')->with('success', $lead->first_name . ' ' . $lead->last_name . ' details updated successfully');
     }
@@ -274,7 +274,7 @@ class UserController extends Controller
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
 
                 //////////send notification to retail team////////////
                 $notification = Notification::create([
@@ -282,7 +282,7 @@ class UserController extends Controller
                     'receiver_id' => 4,
                     'message' => 'The quote has been accepted for Lead ID ' . $quote->lead_id,
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 break;
             case 'ask_for_another':
                 //////////send notification to zm ////////////
@@ -291,14 +291,14 @@ class UserController extends Controller
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'Regional cordinator  ask another quote for lead id  ' . $quote->lead_id,
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
                 $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'Regional cordinator  ask another quote for lead id  ' . $quote->lead_id,
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 break;
 
             case 'cancel':
@@ -311,14 +311,14 @@ class UserController extends Controller
                     'receiver_id' => ZonalManager::where('id', Lead::find($quote->lead_id)->zm_id)->first()->user_id,
                     'message' => 'Lead' . $quote->lead_id . '' . 'has been cancelled by Rc',
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 //////////send notification to retail team////////////
                 $notification = Notification::create([
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 4,
                     'message' => 'Lead Id ' . $quote->lead_id . '' . ' has been cancelled by Rc',
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json([
@@ -387,14 +387,14 @@ class UserController extends Controller
             'receiver_id' => 4,
             'message' => 'Payment Screen Short is uploaded for Lead ID ' . $lead->id . '. Please Verify.',
         ]);
-        broadcast(new NotificationSent($notification));
+        // broadcast(new NotificationSent($notification));
 
         $notification = Notification::create([
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
             'message' => 'Payment Screen Short is uploaded for Lead ID ' . $lead->id . '.Please Verify.',
         ]);
-        broadcast(new NotificationSent($notification));
+        // broadcast(new NotificationSent($notification));
 
         return response()->json(['success' => true, 'message' => 'Payment screen short uploaded successfully']);
     }

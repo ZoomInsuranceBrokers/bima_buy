@@ -28,7 +28,6 @@
         .quote-item .form-group {
             margin-bottom: 15px;
         }
-
     </style>
     @vite(['resources/js/app.js'])
 </head>
@@ -40,28 +39,28 @@
         <div class="container-fluid page-body-wrapper">
 
             @switch(Auth::user()->role_id)
-                @case('1')
-                    @include('partials.admin_sidebar')
-                    @break
-                @case('2')
-                    @include('partials.user_sidebar')
-                    @break
-                @case('3')
-                    @include('partials.zm_sidebar')
-                    @break
-                @case('4')
-                    @include('partials.retail_sidebar')
-                    @break
-                @default
-                    <p>No sidebar available</p>
+            @case('1')
+            @include('partials.admin_sidebar')
+            @break
+            @case('2')
+            @include('partials.user_sidebar')
+            @break
+            @case('3')
+            @include('partials.zm_sidebar')
+            @break
+            @case('4')
+            @include('partials.retail_sidebar')
+            @break
+            @default
+            <p>No sidebar available</p>
             @endswitch
 
             <div class="main-panel">
                 <!-- <div class="container py-2" style="background-color: #f2edf3;" id="liveNotification"></div> -->
                 @yield('content')
                 @include('partials.footer')
-      </div>
-</div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ asset('vendors/js/vendor.bundle.base.js') }}"></script>
@@ -76,15 +75,16 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script type="module">
-        window.Echo.private('notification.{{ Auth::user()->id }}').listen('NotificationSent', (data) => {
-            Swal.fire({
-                text: data.notification.message,
-                icon: "info",
-                allowOutsideClick: false,
-            }).then(() => {
-                window.location.href = "{{route('login')}}"; 
-            });
-        });
+        // window.Echo.private('notification.{{ Auth::user()->id }}').listen('NotificationSent', (data) => {
+        //     Swal.fire({
+        //         text: data.notification.message,
+        //         icon: "info",
+        //         allowOutsideClick: false,
+        //     }).then(() => {
+        //         window.location.href = "{{route('login')}}"; 
+        //     });
+        // });
+        
     </script>
 
     @stack('scripts')

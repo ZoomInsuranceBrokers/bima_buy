@@ -40,11 +40,11 @@
         <i class="mdi mdi-newspaper menu-icon"></i>
       </a>
     </li>
-    <li class="nav-item">
+    <!-- <li class="nav-item">
       <a class="nav-link" href="{{route('user.wallet')}}">
         <span class="menu-title">Wallet</span>
         <i class="mdi mdi-wallet menu-icon"></i>
       </a>
-    </li>
+    </li> -->
   </ul>
 </nav>

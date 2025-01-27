@@ -66,7 +66,7 @@
                                                                         @if ($lead->is_cancel)
                                                                             <label class="badge badge-danger">Cancel</label>
                                                                         @elseif($lead->is_retail_verified)
-                                                                            <label class="badge badge-success">Verifyed</label>
+                                                                            <label class="badge badge-success">Verified</label>
                                                                         @else
                                                                             <label class="badge badge-warning">Pending</label>
                                                                         @endif
