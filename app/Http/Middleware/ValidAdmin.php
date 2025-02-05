@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Controllers\AuthController;
+
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LoginController;
 use Symfony\Component\HttpFoundation\Response;
 
 class ValidAdmin
@@ -20,8 +21,7 @@ class ValidAdmin
         if (Auth::user()->role_id == 1) {
             return $next($request);
         } else {
-            return redirect()->action([AuthController::class, 'login']);
+            return redirect()->action([LoginController::class, 'login']);
         }
-
     }
 }

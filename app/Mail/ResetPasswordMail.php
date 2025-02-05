@@ -42,7 +42,7 @@ class ResetPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.password-reset-link.blade',
+            view: 'emails.password-reset-link',
         );
     }
 

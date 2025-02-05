@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ZmController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\RetailController;
 use App\Http\Middleware\ValidRc;
 use App\Http\Middleware\ValidZm;
 use App\Http\Middleware\ValidRetail;
+use App\Http\Middleware\ValidAdmin;
 
 // Route::get('/', function () {
 //     return view('adminpages.index');
@@ -22,6 +24,7 @@ Route::post('forgot-password', [LoginController::class, 'sendResetLink'])->name(
 Route::get('reset-password/{token}', [LoginController::class, 'showResetForm'])->name('password.reset');
 Route::post('reset-password', [LoginController::class, 'reset'])->name('password.update');
 
+//////////////////////////////////////////////////////login user routes///////////////////////////////////////////////
 
 Route::middleware('auth')->group(function () {
     Route::get('/otp-form', [LoginController::class, 'showOtpForm'])->name('otp.form');
@@ -32,14 +35,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/fetch', [LoginController::class, 'fetchNotifications'])->name('notifications.fetch');
     Route::post('/notifications/mark-as-read', [LoginController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::get('/payment/screenshort/link/{id}', [RetailController::class, 'getPaymentScreenShortAndLink']);
-
 });
 
 /////////////////////////////////////////admin////////////////////////////////////////
-
-// Route::get('/user/dashboard', function () {
-//     return view('adminpages.index');
-// })->name('user.dashboard');
+Route::middleware(['auth', ValidAdmin::class])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'todayReport'])->name('admin.dashboard');
+    Route::get('/admin/total/leads', [AdminController::class, 'totalReport'])->name('admin.total.leads');
+});
 
 
 /////////////////////////////////////////user////////////////////////////////////////
@@ -58,7 +60,6 @@ Route::middleware(['auth', ValidRc::class])->group(function () {
     Route::post('/user/submit-quote-action', [UserController::class, 'submitQuoteAction'])->name('user.submit.quote.action');
     Route::post('/leads/{id}/upload-Payment-Scree-Short', [UserController::class, 'uploadPaymentScreenShort'])->name('user.upload.payment.screen.short');
     Route::get('/user/cancel/leads', [UserController::class, 'cancelLeads'])->name('user.cancelLeads');
-
 });
 /////////////////////////////////////////zm////////////////////////////////////////
 
@@ -70,7 +71,6 @@ Route::middleware(['auth', ValidZm::class])->group(function () {
     Route::get('/zm/policy/copy', [ZmController::class, 'policyCopy'])->name('zm.policyCopy');
     Route::get('/zm/completed/lead', [ZmController::class, 'completedLeads'])->name('zm.completedLeads');
     Route::get('/zm/cancel/leads', [ZmController::class, 'cancelLeads'])->name('zm.cancelLeads');
-
 });
 
 
@@ -96,6 +96,6 @@ Route::middleware(['auth', ValidRetail::class])->group(function () {
     Route::post('/leads/payment/{id}', [RetailController::class, 'upadtePaymentStatus']);
     Route::post('/leads/{id}/upload-policy', [RetailController::class, 'uploadPolicy']);
     Route::get('/retail/cancel/leads', [RetailController::class, 'cancelLeads'])->name('retail.cancelLeads');
-
-
+    Route::get('/retail/report', [RetailController::class, 'totalSalesReport'])->name('retail.report');
+    Route::post('/retail/generate/report', [RetailController::class, 'downloadReport'])->name('retail.generate.report');
 });

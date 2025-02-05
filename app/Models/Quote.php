@@ -13,9 +13,14 @@ class Quote extends Model
         'lead_id',
         'quote_name',
         'price',
+        'od_premium',
+        'tp_premium',
+        'vehicle_idv',
         'file_path',
         'is_accepted',
         'payment_status',
+        'policy_start_date',
+        'policy_end_date',
     ];
     protected $casts = [
         'is_accepted' => 'boolean',

@@ -142,7 +142,7 @@
                         </button>
                     </div>
 
-                    <button type="submit" class="btn btn-gradient-primary btn-lg btn-block">
+                    <button type="submit"  id="update"class="btn btn-gradient-primary btn-lg btn-block">
                         Update
                     </button>
                 </form>
@@ -179,6 +179,12 @@
             const fileInput = document.querySelector(`input[name="documents[${index}][file]"]`);
             documentNameField.disabled = !fileInput.files.length;
         }
+
+        $('#update').click('click',function(){
+            $('#preloader1').show();
+        })
+
+
     </script>
 @endpush
 @endsection

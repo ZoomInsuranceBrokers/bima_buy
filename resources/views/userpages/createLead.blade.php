@@ -107,13 +107,16 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Date of Birth<span
-                                        class="text-danger">*</span></label>
+                        <div class="form-group row">
+                                <label class="col-sm-3 col-form-label">Vehicle Type<span class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input class="form-control" name="date_of_birth" placeholder="dd/mm/yyyy"
-                                        type="date" value="{{ old('date_of_birth') }}" />
-                                    @error('date_of_birth')
+                                    <select name="vehicle_type" class="form-control">
+                                        <option value="" {{ old('vehicle_type') == '' ? 'selected' : '' }} disabled>Select Vehicle Type</option>
+                                        <option value="Motorcycle" {{ old('vehicle_type') == 'Motorcycle' ? 'selected' : '' }}>Motorcycle</option>
+                                        <option value="Private Car" {{ old('vehicle_type') == 'Private Car' ? 'selected' : '' }}>Private Car</option>
+                                        <option value="Commercial Vehicle" {{ old('vehicle_type') == 'Commercial Vehicle' ? 'selected' : '' }}>Commercial Vehicle</option>
+                                    </select>
+                                    @error('vehicle_type')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -226,7 +229,7 @@
                         </button>
                     </div>
 
-                    <button type="submit" class="btn btn-gradient-primary btn-lg btn-block">
+                    <button type="submit" id="leadsubmit" class="btn btn-gradient-primary btn-lg btn-block">
                         Submit
                     </button>
                 </form>
@@ -263,6 +266,11 @@
             const fileInput = document.querySelector(`input[name="documents[${index}][file]"]`);
             documentNameField.disabled = !fileInput.files.length;
         }
+        $('#leadsubmit').click('click',function(){
+            $('#preloader1').show();
+        })
+
+
     </script>
 @endpush
 @endsection

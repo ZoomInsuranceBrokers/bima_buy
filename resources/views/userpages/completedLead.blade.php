@@ -81,6 +81,7 @@
 @push('scripts')
     <script>
         function showQuoteDetails(leadId) {
+            $('#preloader1').show();
             $.ajax({
                 url: '/quote-details/' + leadId,
                 type: 'GET',
@@ -88,23 +89,22 @@
                     let quotesContainer = $('#quotesContainer');
                     quotesContainer.empty();
                     // Populate existing quotes
-                    response.quotes.forEach(quote => {
-                        let features = quote.description.map(feature =>
-                            `<li>${feature}</li>`
-                        ).join('');
-
-                        quotesContainer.append(`
-                                                            <div class="quote-item mb-4">
-                                                                <div class="d-flex justify-content-between">
-                                                                    <p><strong>Policy Name:</strong> ${quote.quote}</p>
-                                                                </div>
-                                                                <p><strong>Features:</strong></p>
-                                                                <ul>${features}</ul>
-                                                                 <p><strong>Price:</strong> ₹${quote.price}</p>
-                                                                <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
-                                                            </div>
-                                                        `);
-                    });
+                    $('#preloader1').hide();
+                let quotesHTML = '';
+                response.forEach(function(quote) {
+                    // Using Bootstrap grid to create a responsive layout
+                    quotesHTML += `<div class="col-md-4 mb-3"> 
+                                                                                                                                        <div class="card">
+                                                                                                                                            <div class="card-body">
+                                                                                                                                                <h5 class="card-title">${quote.quote_name}</h5>
+                                                                                                                                                <p><strong>Document:</strong> ${quote.file_path ? `<a href="${quote.temporary_url}" target="_blank">View</a>` : 'No file attached'}</p>
+                                                                                                                                                <p><strong>Price:</strong> ₹${quote.price}</p>
+                                                                                                                                                <p><strong>Status:</strong> ${quote.is_accepted ? 'Accepted' : 'Pending'}</p>
+                                                                                                                                                <input type="checkbox" class="quoteCheckbox" data-quote-id="${quote.id}" />
+                                                                                                                                            </div>
+                                                                                                                                        </div>
+                                                                                                                                    </div>`;
+                });
                     // Show the modal
                     $('#quoteModal').modal('show');
                 },

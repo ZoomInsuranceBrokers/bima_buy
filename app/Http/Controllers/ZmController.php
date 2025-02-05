@@ -19,6 +19,9 @@ class ZmController extends Controller
 {
     public function index()
     {
+
+        // dd(env('REVERB_APP_KEY'));
+
         $leads = Lead::with([
             'quotes' => function ($query) {
                 $query->select('id', 'lead_id', 'is_accepted', 'price','updated_at');  
@@ -43,7 +46,7 @@ class ZmController extends Controller
 
     public function getLeadDetails($id)
     {
-        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'date_of_birth', 'mobile_no', 'vehicle_number','email','claim_status','policy_type')
+        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'vehicle_type', 'mobile_no', 'vehicle_number','email','claim_status','policy_type')
             ->with(['documents:id,lead_id,document_name,file_path'])
             ->find($id);
 
@@ -75,23 +78,23 @@ class ZmController extends Controller
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
 
                 $update_message = [
                     'lead_id' =>Crypt::encrypt($lead->id),
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Tracking ID ' . $lead->id . '.',
                 ];
-                broadcast(new UpdateLead($update_message));
+                // broadcast(new UpdateLead($update_message));
                 break;
             case 'verified':
                 $lead->is_zm_verified = true;
                 $notification=Notification::create([
                     'sender_id' => Auth::user()->id,
-                    'receiver_id' => 4,
+                    'receiver_id' => 2,
                     'message' => 'Please send a quote for Lead ID ' . $lead->id . '.',
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 break;
             case 'cancel':
                 $lead->is_cancel = true;
@@ -100,7 +103,7 @@ class ZmController extends Controller
                     'receiver_id' => $lead->user_id,
                     'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Zonal Manger.',
                 ]);
-                broadcast(new NotificationSent($notification));
+                // broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -114,7 +117,7 @@ class ZmController extends Controller
 
     public function policyCopy()
     {
-        return view('zmpages.policycopy');
+        return view('zmpages.policyCopy');
     }
 
     public function getPolicyCopyDetails(Request $request)
@@ -219,7 +222,7 @@ class ZmController extends Controller
             ->get();
 
         // return $cancelLeads;
-        return view('zmpages.cancelleads', compact('cancelLeads'));
+        return view('zmpages.cancelLeads', compact('cancelLeads'));
     }
 
 }

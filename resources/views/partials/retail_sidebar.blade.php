@@ -34,7 +34,11 @@
         <i class="mdi mdi-trophy menu-icon"></i>
       </a>
     </li>
-    
-
+    <li class="nav-item">
+      <a class="nav-link" href="{{route('retail.report')}}">
+        <span class="menu-title">Report</span>
+        <i class="mdi mdi-chart-bar menu-icon"></i>
+      </a>
+    </li>
   </ul>
 </nav>

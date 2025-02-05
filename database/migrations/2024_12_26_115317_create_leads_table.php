@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('gender');
-            $table->date('date_of_birth');
             $table->string('mobile_no');
             $table->string('email')->nullable();
             $table->string('vehicle_number');

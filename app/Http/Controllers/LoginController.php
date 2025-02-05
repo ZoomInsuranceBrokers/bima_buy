@@ -22,6 +22,11 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
+
+            if (Auth::user()->first_login) {
+                return redirect()->route('logout');
+            }
+            
             switch (Auth::user()->role_id) {
                 case 1: // Admin
                     return redirect()->route('admin.dashboard');
@@ -50,7 +55,8 @@ class LoginController extends Controller
 
 
             if ($user->first_login) {
-                $otp = rand(100000, 999999);;
+                $otp = rand(100000, 999999);
+                ;
                 Session::put('otp', $otp);
                 Session::put('otp_generated_at', now());
                 Mail::to($user->email)->send(new OtpMail($otp));

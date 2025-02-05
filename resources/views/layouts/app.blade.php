@@ -29,39 +29,76 @@
             margin-bottom: 15px;
         }
 
+        #preloader1 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 10301;
+            display: none;
+        }
+
+
+        .loader1 {
+            position: relative;
+            top: 50%;
+            left: 50%;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #8258F7;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
     @vite(['resources/js/app.js'])
 </head>
 
 <body>
+    <div id="preloader1">
+        <div class="loader1"></div>
+    </div>
 
     <div class="container-scroller">
+
         @include('partials.navbar')
         <div class="container-fluid page-body-wrapper">
 
             @switch(Auth::user()->role_id)
-                @case('1')
-                    @include('partials.admin_sidebar')
-                    @break
-                @case('2')
-                    @include('partials.user_sidebar')
-                    @break
-                @case('3')
-                    @include('partials.zm_sidebar')
-                    @break
-                @case('4')
-                    @include('partials.retail_sidebar')
-                    @break
-                @default
-                    <p>No sidebar available</p>
+            @case('1')
+            @include('partials.admin_sidebar')
+            @break
+            @case('2')
+            @include('partials.user_sidebar')
+            @break
+            @case('3')
+            @include('partials.zm_sidebar')
+            @break
+            @case('4')
+            @include('partials.retail_sidebar')
+            @break
+            @default
+            <p>No sidebar available</p>
             @endswitch
 
             <div class="main-panel">
                 <!-- <div class="container py-2" style="background-color: #f2edf3;" id="liveNotification"></div> -->
                 @yield('content')
                 @include('partials.footer')
-      </div>
-</div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ asset('vendors/js/vendor.bundle.base.js') }}"></script>
@@ -76,15 +113,15 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script type="module">
-        window.Echo.private('notification.{{ Auth::user()->id }}').listen('NotificationSent', (data) => {
-            Swal.fire({
-                text: data.notification.message,
-                icon: "info",
-                allowOutsideClick: false,
-            }).then(() => {
-                window.location.href = "{{route('login')}}"; 
-            });
-        });
+        // window.Echo.private('notification.{{ Auth::user()->id }}').listen('NotificationSent', (data) => {
+        //     Swal.fire({
+        //         text: data.notification.message,
+        //         icon: "info",
+        //         allowOutsideClick: false,
+        //     }).then(() => {
+        //         window.location.href = "{{route('login')}}"; 
+        //     });
+        // });
     </script>
 
     @stack('scripts')
