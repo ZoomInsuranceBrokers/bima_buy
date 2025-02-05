@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Lead;
 use App\Models\PolicyCopy;
 use Illuminate\Support\Facades\Auth;
@@ -139,7 +138,6 @@ class RetailController extends Controller
 
         return response()->json($quotes);
     }
-
     public function store(Request $request)
     {
         // Validation for the incoming request (including file upload)

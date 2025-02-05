@@ -279,7 +279,6 @@
                     </div>
                     <button type="button" class="btn btn-primary" onclick="submitPolicyCopy()">Submit</button>
                 </form>
-
             </div>
         </div>
     </div>
