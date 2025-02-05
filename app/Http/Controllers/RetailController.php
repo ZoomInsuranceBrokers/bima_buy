@@ -520,7 +520,7 @@ class RetailController extends Controller
                     ->where('is_accepted', 1);
             },
         ])
-            ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue', 'is_retail_verified', 'payment_link', 'payment_receipt', 'is_payment_complete', 'updated_at', 'created_at')
+            ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue', 'is_retail_verified', 'payment_link', 'payment_receipt', 'is_payment_complete','final_status', 'updated_at', 'created_at')
             ->whereBetween('created_at', [$request->from_date, $request->to_date])
             ->where('is_zm_verified', 1)
             ->where('is_accepted', 1)

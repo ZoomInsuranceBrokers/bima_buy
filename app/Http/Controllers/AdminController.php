@@ -16,73 +16,70 @@ class AdminController extends Controller
             ->selectRaw('COUNT(*) AS total_count')
             ->selectRaw('SUM(is_cancel = 1) AS cancel_count')
             ->selectRaw('
-                SUM(
-                    CASE 
-                        WHEN is_cancel = 0 AND (
-                            (is_issue = 1) OR
-                            (is_issue = 1 AND is_zm_verified = 0) OR
-                            (is_issue = 1 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
-                            (quotes_send = 1 AND ask_another_quotes = 0 AND is_accepted = 0) OR
-                            (is_accepted = 1 AND payment_link IS NOT NULL AND payment_receipt IS NULL)
-                        ) THEN 1 ELSE 0 END
-                ) AS pendin_at_rc
-            ')
+            SUM(
+                is_cancel = 0 AND (
+                    is_issue = 1 OR
+                    (is_issue = 1 AND is_zm_verified = 0) OR
+                    (is_issue = 1 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
+                    (quotes_send = 1 AND ask_another_quotes = 0 AND is_accepted = 0) OR
+                    (is_accepted = 1 AND payment_link IS NOT NULL AND payment_receipt IS NULL)
+                )
+            ) AS pendin_at_rc
+        ')
             ->selectRaw('SUM(is_issue = 0 AND is_zm_verified = 0 AND is_cancel = 0) AS pendin_at_zm')
             ->selectRaw('
-                SUM(
-                    CASE 
-                        WHEN is_cancel = 0 AND (
-                            (is_issue = 0 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
-                            (is_retail_verified = 1 AND quotes_send = 0) OR
-                            (ask_another_quotes = 1 AND is_accepted=0) OR
-                            (is_accepted = 1 AND is_issue = 0 AND payment_link IS NULL) OR
-                            (payment_receipt IS NOT NULL AND is_payment_complete = 0) OR
-                            (is_payment_complete = 1 AND final_status = 0)
-                        ) THEN 1 ELSE 0 END
-                ) AS pendin_at_retail
-            ')
+            SUM(
+                is_cancel = 0 AND (
+                    (is_issue = 0 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
+                    (is_retail_verified = 1 AND quotes_send = 0) OR
+                    (ask_another_quotes = 1 AND is_accepted = 0) OR
+                    (is_accepted = 1 AND is_issue = 0 AND payment_link IS NULL) OR
+                    (payment_receipt IS NOT NULL AND is_payment_complete = 0) OR
+                    (is_payment_complete = 1 AND final_status = 0)
+                )
+            ) AS pendin_at_retail
+        ')
             ->selectRaw('SUM(final_status = 1) AS policy_issued')
-            ->whereDate('created_at', $today) 
-            ->first(); 
+            ->whereDate('created_at', $today)
+            ->first();
 
         return view('adminpages.admin-dashboard', compact('report'));
     }
     public function totalReport()
     {
         $report = DB::table('leads')
-        ->selectRaw('COUNT(*) AS total_count')
-        ->selectRaw('SUM(is_cancel = 1) AS cancel_count')
-        ->selectRaw('
-            SUM(
-                CASE 
-                    WHEN is_cancel = 0 AND (
-                        (is_issue = 1) OR
+            ->selectRaw('COUNT(*) AS total_count')
+            ->selectRaw('SUM(is_cancel = 1) AS cancel_count')
+            ->selectRaw('
+                SUM(
+                    is_cancel = 0 AND (
+                        is_issue = 1 OR
                         (is_issue = 1 AND is_zm_verified = 0) OR
                         (is_issue = 1 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
                         (quotes_send = 1 AND ask_another_quotes = 0 AND is_accepted = 0) OR
                         (is_accepted = 1 AND payment_link IS NOT NULL AND payment_receipt IS NULL)
-                    ) THEN 1 ELSE 0 END
-            ) AS pendin_at_rc
-        ')
-        ->selectRaw('SUM(is_issue = 0 AND is_zm_verified = 0 AND is_cancel = 0) AS pendin_at_zm')
-        ->selectRaw('
-            SUM(
-                CASE 
-                    WHEN is_cancel = 0 AND (
+                    )
+                ) AS pendin_at_rc
+            ')
+            ->selectRaw('SUM(is_issue = 0 AND is_zm_verified = 0 AND is_cancel = 0) AS pendin_at_zm')
+            ->selectRaw('
+                SUM(
+                    is_cancel = 0 AND (
                         (is_issue = 0 AND is_zm_verified = 1 AND is_retail_verified = 0) OR
                         (is_retail_verified = 1 AND quotes_send = 0) OR
                         (ask_another_quotes = 1 AND is_accepted = 0) OR
                         (is_accepted = 1 AND is_issue = 0 AND payment_link IS NULL) OR
                         (payment_receipt IS NOT NULL AND is_payment_complete = 0) OR
                         (is_payment_complete = 1 AND final_status = 0)
-                    ) THEN 1 ELSE 0 END
-            ) AS pendin_at_retail
-        ')
-        ->selectRaw('SUM(final_status = 1) AS policy_issued')
-        ->first(); 
-        return view("adminpages.admin-total-leads", compact('report'));
+                    )
+                ) AS pendin_at_retail
+            ')
+            ->selectRaw('SUM(final_status = 1) AS policy_issued')
+            ->first();
+
+        return view('adminpages.admin-total-leads', compact('report'));
     }
 
 
-   
+
 }

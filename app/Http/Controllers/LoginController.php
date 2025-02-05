@@ -202,6 +202,7 @@ class LoginController extends Controller
                 }
             ])
             ->select('id', 'message', 'is_read', 'sender_id', 'created_at')
+            ->where('is_read', 0)
             ->orderBy('created_at', 'desc');
 
 
