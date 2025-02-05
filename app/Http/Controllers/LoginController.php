@@ -111,19 +111,22 @@ class LoginController extends Controller
                 Session::forget('otp');
                 Session::forget('otp_generated_at');
 
-                // Redirect to appropriate dashboard
-                switch ($user->role_id) {
-                    case 1: // Admin
-                        return redirect()->route('admin.dashboard');
-                    case 2: // Users
-                        return redirect()->route('user.dashboard');
-                    case 3: // ZM
-                        return redirect()->route('zm.dashboard');
-                    case 4: // Retail
-                        return redirect()->route('retail.dashboard');
-                    default:
-                        return redirect()->route('user1.dashboard');
-                }
+                return redirect()->route('logout');
+
+
+                // // Redirect to appropriate dashboard
+                // switch ($user->role_id) {
+                //     case 1: // Admin
+                //         return redirect()->route('admin.dashboard');
+                //     case 2: // Users
+                //         return redirect()->route('user.dashboard');
+                //     case 3: // ZM
+                //         return redirect()->route('zm.dashboard');
+                //     case 4: // Retail
+                //         return redirect()->route('retail.dashboard');
+                //     default:
+                //         return redirect()->route('user1.dashboard');
+                // }
             } else {
                 // OTP expired
                 return back()->withErrors(['otp' => 'OTP has expired. Please try again.'])->onlyInput('otp');
