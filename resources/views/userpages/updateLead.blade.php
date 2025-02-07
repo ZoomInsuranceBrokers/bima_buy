@@ -59,7 +59,7 @@
                                 <label class="col-sm-3 col-form-label">Gender<span class="text-danger">*</span></label>
                                 <div class="col-sm-9">
                                     <select name="gender" class="form-control">
-                                        <option value="Male" {{ old('gender', $lead->gender) == 'Male' ? 'selected' : '' }}>Male</option>
+                                        <option value="Male" {{ old('gender', default: $lead->gender) == 'Male' ? 'selected' : '' }}>Male</option>
                                         <option value="Female" {{ old('gender', $lead->gender) == 'Female' ? 'selected' : '' }}>Female</option>
                                     </select>
                                     @error('gender')
@@ -69,13 +69,16 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-3 col-form-label">Date of Birth<span
-                                        class="text-danger">*</span></label>
+                        <div class="form-group row">
+                                <label class="col-sm-3 col-form-label">Vehicle Type<span class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input class="form-control" name="date_of_birth" type="date"
-                                        value="{{ old('date_of_birth', $lead->date_of_birth) }}" />
-                                    @error('date_of_birth')
+                                    <select name="vehicle_type" class="form-control">
+                                        <option value="" {{ old('vehicle_type') == '' ? 'selected' : '' }} disabled>Select Vehicle Type</option>
+                                        <option value="Motorcycle" {{ old('vehicle_type',$lead->vehicle_type) == 'Motorcycle' ? 'selected' : '' }}>Motorcycle</option>
+                                        <option value="Private Car" {{ old('vehicle_type',$lead->vehicle_type) == 'Private Car' ? 'selected' : '' }}>Private Car</option>
+                                        <option value="Commercial Vehicle" {{ old('vehicle_type',$lead->vehicle_type) == 'Commercial Vehicle' ? 'selected' : '' }}>Commercial Vehicle</option>
+                                    </select>
+                                    @error('vehicle_type')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
