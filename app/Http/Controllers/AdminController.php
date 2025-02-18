@@ -219,7 +219,7 @@ class AdminController extends Controller
                             ->whereNull('payment_receipt');
                     });
             })
-            ->whereDate('created_at', $today)
+            ->whereDate('created_at', $today) // Apply the date condition here
             ->get();
 
         return view('adminpages.leads', compact('leads'));
