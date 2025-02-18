@@ -52,7 +52,7 @@ Route::middleware(['auth', ValidAdmin::class])->group(function () {
     Route::get('cancel/leads/today', [AdminController::class, 'todayCancelLeadsReport'])->name('admin.cancel.leads.today');
     Route::get('today/pending/leads/at/rc', [AdminController::class, 'todayPendLeadsAtRcEnd'])->name('admin.pending.leads.today.rc');
     Route::get('today/pending/leads/at/zm', [AdminController::class, 'todayPendLeadsinAtZm'])->name('admin.pending.leads.today.zm');
-    Route::get('today/pending/leads/at/retail', [AdminController::class, 'todayPendLeadsAtRcEnd'])->name('admin.pending.leads.today.retail');
+    Route::get('today/pending/leads/at/retail', [AdminController::class, 'todayPendLeadsAtRetailEnd'])->name('admin.pending.leads.today.retail');
     
 
     Route::get('total/leads', [AdminController::class, 'totalLeadsReport'])->name('admin.total.leads');

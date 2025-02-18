@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
+
 class AdminController extends Controller
 {
     public function todayReport()
@@ -195,6 +196,7 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
+            ->where('is_cancel', 0)
             ->where(function ($query) {
                 $query->where('is_issue', 1)
                     ->orWhere(function ($query) {
@@ -239,36 +241,39 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
+            ->where('is_cancel', 0)
             ->where(function ($query) {
-                $query->where('is_issue', 0)
-                    ->where('is_zm_verified', 1)
-                    ->where('is_retail_verified', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_retail_verified', 1)
-                    ->where('quotes_send', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('ask_another_quotes', 1)
-                    ->where('is_accepted', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_accepted', 1)
-                    ->where('is_issue', 0)
-                    ->whereNull('payment_link');
-            })
-            ->orWhere(function ($query) {
-                $query->whereNotNull('payment_receipt')
-                    ->where('is_payment_complete', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_payment_complete', 1)
-                    ->where('final_status', 0);
+                $query->where(function ($q) {
+                    $q->where('is_issue', 0)
+                        ->where('is_zm_verified', 1)
+                        ->where('is_retail_verified', 0);
+                })
+                    ->orWhere(function ($q) {
+                        $q->where('is_retail_verified', 1)
+                            ->where('quotes_send', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('ask_another_quotes', 1)
+                            ->where('is_accepted', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('is_accepted', 1)
+                            ->where('is_issue', 0)
+                            ->whereNull('payment_link');
+                    })
+                    ->orWhere(function ($q) {
+                        $q->whereNotNull('payment_receipt')
+                            ->where('is_payment_complete', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('is_payment_complete', 1)
+                            ->where('final_status', 0);
+                    });
             })
             ->whereDate('created_at', $today)
             ->get();
 
-        return view('adminpages.leads', compact('leads'));
+        return $leads;
     }
 
     ////////////////////////////////////////////////////////Total Report////////////////////////////////////////
@@ -409,31 +414,34 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
+            ->where('is_cancel', 0)
             ->where(function ($query) {
-                $query->where('is_issue', 0)
-                    ->where('is_zm_verified', 1)
-                    ->where('is_retail_verified', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_retail_verified', 1)
-                    ->where('quotes_send', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('ask_another_quotes', 1)
-                    ->where('is_accepted', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_accepted', 1)
-                    ->where('is_issue', 0)
-                    ->whereNull('payment_link');
-            })
-            ->orWhere(function ($query) {
-                $query->whereNotNull('payment_receipt')
-                    ->where('is_payment_complete', 0);
-            })
-            ->orWhere(function ($query) {
-                $query->where('is_payment_complete', 1)
-                    ->where('final_status', 0);
+                $query->where(function ($q) {
+                    $q->where('is_issue', 0)
+                        ->where('is_zm_verified', 1)
+                        ->where('is_retail_verified', 0);
+                })
+                    ->orWhere(function ($q) {
+                        $q->where('is_retail_verified', 1)
+                            ->where('quotes_send', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('ask_another_quotes', 1)
+                            ->where('is_accepted', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('is_accepted', 1)
+                            ->where('is_issue', 0)
+                            ->whereNull('payment_link');
+                    })
+                    ->orWhere(function ($q) {
+                        $q->whereNotNull('payment_receipt')
+                            ->where('is_payment_complete', 0);
+                    })
+                    ->orWhere(function ($q) {
+                        $q->where('is_payment_complete', 1)
+                            ->where('final_status', 0);
+                    });
             })
             ->get();
 
