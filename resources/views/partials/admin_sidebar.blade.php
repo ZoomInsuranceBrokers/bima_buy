@@ -21,8 +21,21 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="{{route('admin.total.leads')}}">
+      <a class="nav-link" href="{{route('admin.total.leads.report')}}">
         <span class="menu-title">Total Leads</span>
+        <i class="mdi mdi-cube menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{route('admin.adduser')}}">
+        <span class="menu-title">User Master</span>
+        <i class="mdi mdi-account-plus menu-icon"></i>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-link" href="{{route('retail.report')}}">
+        <span class="menu-title">Report</span>
         <i class="mdi mdi-chart-bar menu-icon"></i>
       </a>
     </li>

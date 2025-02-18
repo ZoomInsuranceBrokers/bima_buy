@@ -61,6 +61,7 @@ class RetailController extends Controller
             case 'insufficient_details':
                 $lead->is_issue = true;
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
@@ -77,6 +78,7 @@ class RetailController extends Controller
 
 
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
@@ -86,22 +88,6 @@ class RetailController extends Controller
                 break;
             case 'verified':
                 $lead->is_retail_verified = true;
-                break;
-            case 'cancel':
-                $lead->is_cancel = true;
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => $lead->user_id,
-                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Reatil Team.',
-                ]);
-                // broadcast(new NotificationSent($notification));
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Invalid action'], 400);
@@ -114,7 +100,7 @@ class RetailController extends Controller
 
     public function getQuotes($leadId)
     {
-        $quotes = Quote::select('id', 'quote_name', 'price', 'od_premium', 'tp_premium', 'vehicle_idv', 'file_path')
+        $quotes = Quote::select('id', 'quote_name', 'price', 'od_premium', 'tp_premium', 'vehicle_idv', 'file_path', 'remarks')
             ->where('lead_id', $leadId)->get();
         $quotes->transform(function ($quote) {
             if (!empty($quote->file_path)) { // Ensure file_path is not null or empty
@@ -152,6 +138,7 @@ class RetailController extends Controller
             'tp_premium.*' => 'required|numeric',
             'vehicle_idv' => 'required|array',
             'vehicle_idv.*' => 'required|numeric',
+            'remark' => 'required|array',
             'file_path' => 'nullable|array',
             'file_path.*' => 'nullable|file|max:10240',
         ]);
@@ -164,6 +151,7 @@ class RetailController extends Controller
             $quote->od_premium = $request->od_premium[$key];
             $quote->tp_premium = $request->tp_premium[$key];
             $quote->vehicle_idv = $request->vehicle_idv[$key];
+            $quote->remarks = $request->remark[$key];
 
             // Check if a file was uploaded for this quote
             if ($request->hasFile('file_path') && $request->file('file_path')[$key]) {
@@ -179,6 +167,7 @@ class RetailController extends Controller
         Lead::where('id', $request->lead_id)->update(['quotes_send' => 1, 'ask_another_quotes' => 0]);
 
         $notification = Notification::create([
+            'lead_id' => $request->lead_id,
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', Lead::find($request->lead_id)->zm_id)->first()->user_id,
             'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
@@ -187,6 +176,7 @@ class RetailController extends Controller
         // broadcast(new NotificationSent($notification));
 
         $notification = Notification::create([
+            'lead_id' => $request->lead_id,
             'sender_id' => Auth::user()->id,
             'receiver_id' => Lead::find($request->lead_id)->user_id,
             'message' => 'Quote is sending for Lead ID ' . $request->lead_id . '.',
@@ -209,12 +199,14 @@ class RetailController extends Controller
             case 'complete':
                 $lead->is_payment_complete = true;
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => 'Payment is completed for Lead ID ' . $lead->id . '.',
@@ -224,104 +216,68 @@ class RetailController extends Controller
             case 'reupload':
                 $lead->payment_receipt = null;
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
-                    'message' => 'Payment screenshot not visible clearly. Please re-upload a clear payment screenshot for Lead ID ' . $lead->id . '.',
+                    'message' => $request->input('message') . 'Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Payment screenshot not visible clearly. Please re-upload a clear payment screenshot for Lead ID  ' . $lead->id . '.',
+                    'message' => $request->input('message') . 'Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
+
                 break;
             case 'notify':
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
-                    'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
+                    'message' => $request->input('message') . 'Payment is pending for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Payment is pending for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                break;
-            case 'cancel':
-                $lead->is_cancel = true;
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => $lead->user_id,
-                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Retail Team.',
+                    'message' => $request->input('message') . 'Payment is pending for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 break;
             case 'send_payment_link':
                 $lead->payment_link = $request->paymentLink;
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => 'Payment link is send for Lead ID ' . $lead->id,
                 ]);
                 // broadcast(new NotificationSent($notification));
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
                     'message' => 'Payment link is send for Lead ID ' . $lead->id,
                 ]);
                 // broadcast(new NotificationSent($notification));
                 break;
-            case 'upload_aadhar':
+            case 'incomplete_documents':
                 $lead->is_issue = true;
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
-                    'message' => 'Aadhaar card is not clear, please re-upload Aadhaar card for Lead ID ' . $lead->id . '.',
+                    'message' => $request->input('message') . ' for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 $notification = Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Aadhaar card is not clear, please re-upload Aadhaar card for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                break;
-            case 'upload_pan':
-                $lead->is_issue = true;
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => $lead->user_id,
-                    'message' => 'Pan card is not clear, please re-upload Pan card for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Pan card is not clear, please re-upload Pan card for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                break;
-            case 'upload_both_aader_pan':
-                $lead->is_issue = true;
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => $lead->user_id,
-                    'message' => 'Both Aadhaar card and PAN card are not clear, please re-upload both Aadhaar card and PAN card for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                $notification = Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
-                    'message' => 'Both Aadhaar card and PAN card are not clear, please re-upload both Aadhaar card and PAN card for Lead ID ' . $lead->id . '.',
+                    'message' => $request->input('message') . 'for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 break;
@@ -340,7 +296,7 @@ class RetailController extends Controller
         $request->validate([
             'policyCopy' => 'required|file|mimes:pdf,jpeg,jpg,png,gif,bmp,tiff,doc,docx',
             'policy_start_date' => 'required|date',
-            'policy_end_date'   => 'required|date',
+            'policy_end_date' => 'required|date',
 
         ]);
 
@@ -361,15 +317,17 @@ class RetailController extends Controller
         $lead->final_status = true;
         $lead->save();
 
-        Quote::where(['lead_id'=> $id,'is_accepted'=>1])->update(['policy_start_date'=>$request->policy_start_date,'policy_end_date'=> $request->policy_end_date]);
+        Quote::where(['lead_id' => $id, 'is_accepted' => 1])->update(['policy_start_date' => $request->policy_start_date, 'policy_end_date' => $request->policy_end_date]);
 
         $notification = Notification::create([
+            'lead_id' => $lead->id,
             'sender_id' => Auth::user()->id,
             'receiver_id' => $lead->user_id,
             'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
         ]);
         // broadcast(new NotificationSent($notification));
         $notification = Notification::create([
+            'lead_id' => $lead->id,
             'sender_id' => Auth::user()->id,
             'receiver_id' => ZonalManager::where('id', $lead->zm_id)->first()->user_id,
             'message' => 'Policy is uploaded for Lead ID ' . $lead->id . '.',
@@ -420,15 +378,17 @@ class RetailController extends Controller
         $responseData = [];
 
         $documents = Document::where('lead_id', $id)
-            ->whereIn('document_name', ['Aadhar Card', 'Pan Card'])
+            ->whereIn('document_name', ['Aadhar Card Front Page', 'Aadhar Card Back Page', 'Pan Card'])
             ->select('document_name', 'file_path')
             ->get();
 
-        $aadharCard = $documents->where('document_name', 'Aadhar Card');
+        $aadharCardFrontPage = $documents->where('document_name', 'Aadhar Card Front Page');
+        $aadharCardBacktPage = $documents->where('document_name', 'Aadhar Card Back Page');
         $panCard = $documents->where('document_name', 'Pan Card');
 
         // Assign the results to the response data
-        $responseData['aadhar_card'] = $aadharCard->isEmpty() ? null : $aadharCard->first()->file_path;
+        $responseData['aadhar_card_front_page'] = $aadharCardFrontPage->isEmpty() ? null : $aadharCardFrontPage->first()->file_path;
+        $responseData['aadhar_card_back_page'] = $aadharCardBacktPage->isEmpty() ? null : $aadharCardBacktPage->first()->file_path;
         $responseData['pan_card'] = $panCard->isEmpty() ? null : $panCard->first()->file_path;
 
         // Check if payment screenshot exists
@@ -503,8 +463,10 @@ class RetailController extends Controller
         // Validate the date inputs
         $request->validate([
             'from_date' => 'required|date|before_or_equal:to_date',
-            'to_date'   => 'required|date|after_or_equal:from_date',
+            'to_date' => 'required|date|after_or_equal:from_date',
         ]);
+
+        // dd($request->all());
 
 
         $leads = Lead::with([
@@ -516,16 +478,22 @@ class RetailController extends Controller
                 $query->select('id', 'name');
             },
             'quotes' => function ($query) {
-                $query->select('id', 'quote_name', 'lead_id','price', 'od_premium', 'tp_premium', 'vehicle_idv', 'policy_start_date', 'policy_end_date', 'is_accepted')
-                    ->where('is_accepted', 1);
+                $query->select('id', 'quote_name', 'lead_id', 'price', 'od_premium', 'tp_premium', 'vehicle_idv', 'policy_start_date', 'policy_end_date', 'is_accepted')
+                    ->latest('created_at')
+                    ->limit(1);
+            },
+            'lastNotification' => function ($query) {
+                $query->select('id', 'message', 'lead_id');
             },
         ])
-            ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue', 'is_retail_verified', 'payment_link', 'payment_receipt', 'is_payment_complete','final_status', 'updated_at', 'created_at')
-            ->whereBetween('created_at', [$request->from_date, $request->to_date])
-            ->where('is_zm_verified', 1)
-            ->where('is_accepted', 1)
+            ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue','is_zm_verified', 'is_retail_verified','is_cancel', 'payment_link', 'payment_receipt', 'is_payment_complete', 'final_status', 'updated_at', 'created_at')
+            ->whereBetween('created_at', [$request->from_date, $request->to_date.' 23:59:59'])
             ->get();
-        
+
+            // echo '<pre>';
+            // print_r($leads);
+            // exit;
+
         try {
             return Excel::download(new LeadsExport($leads), 'leads_report.xlsx');
         } catch (\Exception $e) {

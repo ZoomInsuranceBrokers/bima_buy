@@ -26,7 +26,7 @@ class LoginController extends Controller
             if (Auth::user()->first_login) {
                 return redirect()->route('logout');
             }
-            
+
             switch (Auth::user()->role_id) {
                 case 1: // Admin
                     return redirect()->route('admin.dashboard');
@@ -279,7 +279,7 @@ class LoginController extends Controller
 
         // Generate password reset token
         $user = User::where('email', $request->email)->first();
-        $token = Hash::make(Str::random(60));
+        $token = Str::random(60);
         $expiresAt = Carbon::now()->addMinutes(10);
 
         // Save token and expiration time to a password_resets table
@@ -339,6 +339,24 @@ class LoginController extends Controller
         DB::table('password_reset_tokens')->where('email', $user->email)->delete();
 
         return redirect()->route('login')->with('status', 'Your password has been reset!');
+    }
+
+    public function getRemarks($id)
+    {
+        $remarks = Notification::with([
+            'sender' => function ($query) {
+                $query->select('id', 'first_name', 'last_name');
+            },
+            'receiver' => function ($query) {
+                $query->select('id', 'first_name', 'last_name');
+            }
+        ])
+            ->where('lead_id', $id)
+            ->where('receiver_id', auth()->id())
+            ->select('id', 'message', 'sender_id', 'receiver_id', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json(['remarks' => $remarks]);
     }
 
 

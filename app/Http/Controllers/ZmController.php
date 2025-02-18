@@ -74,6 +74,7 @@ class ZmController extends Controller
             case 'insufficient_details':
                 $lead->is_issue = true;
                 $notification=Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Lead ID ' . $lead->id . '.',
@@ -90,18 +91,10 @@ class ZmController extends Controller
             case 'verified':
                 $lead->is_zm_verified = true;
                 $notification=Notification::create([
+                    'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 2,
-                    'message' => 'Please send a quote for Lead ID ' . $lead->id . '.',
-                ]);
-                // broadcast(new NotificationSent($notification));
-                break;
-            case 'cancel':
-                $lead->is_cancel = true;
-                $notification=Notification::create([
-                    'sender_id' => Auth::user()->id,
-                    'receiver_id' => $lead->user_id,
-                    'message' => 'Lead ID ' . $lead->id . ' has been cancelled by Zonal Manger.',
+                    'message' =>$request->input('message') .'Please send a quote for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 break;

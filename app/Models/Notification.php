@@ -13,7 +13,7 @@ class Notification extends Model
     protected $table = 'notifications';
 
     // Columns that are allowed for mass assignment
-    protected $fillable = ['sender_id', 'receiver_id', 'message', 'is_read'];
+    protected $fillable = ['lead_id','sender_id', 'receiver_id', 'message', 'is_read'];
 
     // Automatically handle timestamps
     public $timestamps = true;

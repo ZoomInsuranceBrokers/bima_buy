@@ -23,7 +23,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="to_date">To Date:</label>
-                                <input type="date" id="to_date" name="to_date" class="form-control @error('to_date') is-invalid @enderror" value="{{ old('to_date') }}" required>
+                                <input type="date" id="to_date" name="to_date" class="form-control @error('to_date') is-invalid @enderror" value="{{ old('to_date', now()->toDateString()) }}"  required>
 
                                 <!-- Display error message for 'to_date' -->
                                 @error('to_date')

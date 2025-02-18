@@ -15,7 +15,7 @@
                                     <th>Tracking ID </th>
                                     <th>Customer Name</th>
                                     <th>Mobile No</th>
-                                    <th>Canceled</th>
+                                    <th>Cancelled</th>
                                     <th>Last Update</th>
                                 </tr>
                             </thead>

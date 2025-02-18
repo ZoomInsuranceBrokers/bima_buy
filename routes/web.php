@@ -35,12 +35,34 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/fetch', [LoginController::class, 'fetchNotifications'])->name('notifications.fetch');
     Route::post('/notifications/mark-as-read', [LoginController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::get('/payment/screenshort/link/{id}', [RetailController::class, 'getPaymentScreenShortAndLink']);
+    Route::get('/remarks/{id}', [LoginController::class, 'getRemarks']);
+    Route::get('/retail/report', [RetailController::class, 'totalSalesReport'])->name('retail.report');
+    Route::post('/retail/generate/report', [RetailController::class, 'downloadReport'])->name('retail.generate.report');
 });
 
 /////////////////////////////////////////admin////////////////////////////////////////
 Route::middleware(['auth', ValidAdmin::class])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'todayReport'])->name('admin.dashboard');
-    Route::get('/admin/total/leads', [AdminController::class, 'totalReport'])->name('admin.total.leads');
+    Route::get('/admin/total/leads', [AdminController::class, 'totalReport'])->name('admin.total.leads.report');
+    Route::get('/admin/adduser', [AdminController::class, 'addUser'])->name('admin.adduser');
+    Route::post('/user/store', [AdminController::class, 'store'])->name('admin.user.store');
+
+    Route::get('total/leads/today', [AdminController::class, 'todayTotalLeadsReport'])->name('admin.total.leads.today');
+    Route::get('completed/leads/today', [AdminController::class, 'todayCompleteLeadsReport'])->name('admin.completed.leads.today');
+    Route::get('cancel/leads/today', [AdminController::class, 'todayCancelLeadsReport'])->name('admin.cancel.leads.today');
+    Route::get('today/pending/leads/at/rc', [AdminController::class, 'todayPendLeadsAtRcEnd'])->name('admin.pending.leads.today.rc');
+    Route::get('today/pending/leads/at/zm', [AdminController::class, 'todayPendLeadsinAtZm'])->name('admin.pending.leads.today.zm');
+    Route::get('today/pending/leads/at/retail', [AdminController::class, 'todayPendLeadsAtRcEnd'])->name('admin.pending.leads.today.retail');
+    
+
+    Route::get('total/leads', [AdminController::class, 'totalLeadsReport'])->name('admin.total.leads');
+    Route::get('completed/leads', [AdminController::class, 'totalCompleteLeadsReport'])->name('admin.completed.leads');
+    Route::get('cancel/leads', [AdminController::class, 'totalCancelLeadsReport'])->name('admin.cancel.leads');
+    Route::get('pending/leads/at/rc', [AdminController::class, 'totalPendLeadsAtRcEnd'])->name('admin.pending.leads.at.rc');
+    Route::get('pending/leads/at/zm', [AdminController::class, 'totalPendLeadsinAtZm'])->name('admin.pending.leads.at.zm');
+    Route::get('pending/leads/at/retail', [AdminController::class, 'totalPendLeadsAtRetailEnd'])->name('admin.pending.leads.at.retail');
+
+
 });
 
 
@@ -96,6 +118,5 @@ Route::middleware(['auth', ValidRetail::class])->group(function () {
     Route::post('/leads/payment/{id}', [RetailController::class, 'upadtePaymentStatus']);
     Route::post('/leads/{id}/upload-policy', [RetailController::class, 'uploadPolicy']);
     Route::get('/retail/cancel/leads', [RetailController::class, 'cancelLeads'])->name('retail.cancelLeads');
-    Route::get('/retail/report', [RetailController::class, 'totalSalesReport'])->name('retail.report');
-    Route::post('/retail/generate/report', [RetailController::class, 'downloadReport'])->name('retail.generate.report');
+
 });

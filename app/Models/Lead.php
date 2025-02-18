@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Document;
 use App\Models\Quote;
-use App\Models\User; 
+use App\Models\User;
 use App\Models\ZonalManager;
+use App\Models\Notification;
 
 class Lead extends Model
 {
@@ -16,9 +17,9 @@ class Lead extends Model
     protected $fillable = [
         'user_id',
         'zm_id',
-        'first_name', 
-        'last_name', 
-        'gender', 
+        'first_name',
+        'last_name',
+        'gender',
         'date_of_birth',
         'mobile_no',
         'email',
@@ -37,7 +38,7 @@ class Lead extends Model
         'payment_receipt',
         'is_payment_complete',
         'final_status'
-    
+
     ];
     protected $casts = [
         'is_issue' => 'boolean',
@@ -66,4 +67,10 @@ class Lead extends Model
     {
         return $this->belongsTo(ZonalManager::class, 'zm_id');
     }
+
+    public function lastNotification()
+    {
+        return $this->hasOne(Notification::class, 'lead_id', 'id')->latest();
+    }
+
 }

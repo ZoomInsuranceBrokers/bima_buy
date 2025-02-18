@@ -17,6 +17,7 @@ class Quote extends Model
         'tp_premium',
         'vehicle_idv',
         'file_path',
+        'remarks',
         'is_accepted',
         'payment_status',
         'policy_start_date',
