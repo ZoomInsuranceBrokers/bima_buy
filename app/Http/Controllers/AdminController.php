@@ -171,7 +171,9 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
-            ->where('is_cancel', 0, 'is_issue', 0, 'is_zm_verified', 0)
+            ->where('is_cancel', 0)
+            ->where('is_issue', 0)
+            ->where('is_zm_verified', 0)
             ->whereDate('created_at', $today)
             ->get();
 
@@ -334,7 +336,7 @@ class AdminController extends Controller
     {
         $leads = Lead::with([
             'lastNotification' => function ($query) {
-                $query->select('id', 'message', 'lead_id',  'created_at');
+                $query->select('id', 'message', 'lead_id', 'created_at');
             },
             'user' => function ($query) {
                 $query->select('id', 'first_name', 'mobile', 'last_name');
@@ -344,7 +346,9 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
-            ->where('is_cancel', 0, 'is_issue', 0, 'is_zm_verified', 0)
+            ->where('is_cancel', 0)
+            ->where('is_issue', 0)
+            ->where('is_zm_verified', 0)
             ->get();
 
         return view('adminpages.leads', compact('leads'));

@@ -27,9 +27,9 @@
                                             <td>{{ $lead->user->first_name.' '.$lead->user->last_name }}</td>
                                             <td>{{ $lead->first_name.' '.$lead->last_name}}</td>
                                             <td>{{ $lead->zonalManager->name }}</td>
-                                            <td>{{ $lead->lastNotification->message}}</td>
+                                            <td>{{ $lead->lastNotification->message ?? 'No Remarks'}}</td>
                                             <td>{{ $lead->created_at }}</td>
-                                            <td>{{ $lead->lastNotification->created_at }}</td>
+                                            <td>{{ $lead->lastNotification->created_at??'old Lead' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
