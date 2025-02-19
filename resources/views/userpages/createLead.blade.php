@@ -257,7 +257,7 @@
                                 </div>
                                 <label class="col-sm-3 col-form-label">Upload File</label>
                                 <div class="col-sm-9">
-                                    <input type="file" required name="documents[1][file]" accept="image/*,application/pdf"
+                                    <input type="file"  name="documents[1][file]" accept="image/*,application/pdf"
                                         class="form-control" onchange="toggleDocumentName(1)">
                                     @error('documents.1.file')
                                         <span class="text-danger">{{ $message }}</span>
