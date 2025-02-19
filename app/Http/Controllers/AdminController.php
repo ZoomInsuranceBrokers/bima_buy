@@ -373,6 +373,7 @@ class AdminController extends Controller
             }
         ])
             ->select('id', 'user_id', 'zm_id', 'first_name', 'last_name', 'mobile_no', 'created_at')
+            ->where('is_cancel', 0)
             ->where(function ($query) {
                 $query->where('is_issue', 1)
                     ->orWhere(function ($query) {
@@ -396,6 +397,9 @@ class AdminController extends Controller
                     });
             })
             ->get();
+
+            return $leads;
+            
 
         return view('adminpages.leads', compact('leads'));
     }
