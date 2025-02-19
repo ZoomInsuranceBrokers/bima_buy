@@ -398,9 +398,6 @@ class AdminController extends Controller
             })
             ->get();
 
-            return $leads;
-            
-
         return view('adminpages.leads', compact('leads'));
     }
 
