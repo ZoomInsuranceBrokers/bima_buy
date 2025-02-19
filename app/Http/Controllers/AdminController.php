@@ -273,7 +273,7 @@ class AdminController extends Controller
             ->whereDate('created_at', $today)
             ->get();
 
-        return $leads;
+            return view('adminpages.leads', compact('leads'));
     }
 
     ////////////////////////////////////////////////////////Total Report////////////////////////////////////////
