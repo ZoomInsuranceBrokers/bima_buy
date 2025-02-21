@@ -266,13 +266,32 @@ class UserController extends Controller
             }
         }
 
+        if($lead->is_zm_verified){
+            $notification = Notification::create([
+                'lead_id' => $lead->id,
+                'sender_id' => Auth::user()->id,
+                'receiver_id' =>ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
+                'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            ]);
+
+            $notification = Notification::create([
+                'lead_id' => $lead->id,
+                'sender_id' => Auth::user()->id,
+                'receiver_id' => 2,
+                'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            ]);
+
+        }else{
+            $notification = Notification::create([
+                'lead_id' => $lead->id,
+                'sender_id' => Auth::user()->id,
+                'receiver_id' =>ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
+                'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            ]);
+        }
+
         // Send notification
-        $notification = Notification::create([
-            'lead_id' => $lead->id,
-            'sender_id' => Auth::user()->id,
-            'receiver_id' => $lead->is_zm_verified ? 2 : ZonalManager::where('id', Auth::user()->zm_id)->first()->user_id,
-            'message' => 'Lead updated by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
-        ]);
+       
 
 
         if ($request->filled('comments')) {
