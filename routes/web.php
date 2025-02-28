@@ -15,6 +15,10 @@ use App\Http\Middleware\ValidAdmin;
 //     return view('adminpages.index');
 // });
 
+Route::get('/zm/report', [ZmController::class, 'totalSalesReport'])->name('zm.report');
+Route::post('/zm/generate/report', [ZmController::class, 'downloadReport'])->name('zm.generate.report');
+
+
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');

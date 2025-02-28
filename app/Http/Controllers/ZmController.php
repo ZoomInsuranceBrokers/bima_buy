@@ -13,6 +13,8 @@ use App\Models\ZonalManager;
 use Illuminate\Support\Facades\Storage;
 use App\Events\NotificationSent;
 use App\Events\UpdateLead;
+use App\Exports\LeadsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class ZmController extends Controller
@@ -24,16 +26,27 @@ class ZmController extends Controller
 
         $leads = Lead::with([
             'quotes' => function ($query) {
-                $query->select('id', 'lead_id', 'is_accepted', 'price','updated_at');  
+                $query->select('id', 'lead_id', 'is_accepted', 'price', 'updated_at');
             },
             'user' => function ($query) {
-                $query->select('id', 'first_name','mobile' ,'last_name'); 
+                $query->select('id', 'first_name', 'mobile', 'last_name');
             }
         ])
             ->where('zm_id', Auth::user()->zm_id)
-            ->where('is_cancel',0)
+            ->where('is_cancel', 0)
             ->select(
-                'id','user_id','first_name','last_name','is_issue','is_zm_verified','is_accepted','is_retail_verified','is_cancel','is_payment_complete','final_status','updated_at'
+                'id',
+                'user_id',
+                'first_name',
+                'last_name',
+                'is_issue',
+                'is_zm_verified',
+                'is_accepted',
+                'is_retail_verified',
+                'is_cancel',
+                'is_payment_complete',
+                'final_status',
+                'updated_at'
             )
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -46,7 +59,7 @@ class ZmController extends Controller
 
     public function getLeadDetails($id)
     {
-        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'vehicle_type', 'mobile_no', 'vehicle_number','email','claim_status','policy_type')
+        $lead = Lead::select('id', 'first_name', 'last_name', 'gender', 'vehicle_type', 'mobile_no', 'vehicle_number', 'email', 'claim_status', 'policy_type')
             ->with(['documents:id,lead_id,document_name,file_path'])
             ->find($id);
 
@@ -73,7 +86,7 @@ class ZmController extends Controller
         switch ($action) {
             case 'insufficient_details':
                 $lead->is_issue = true;
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => $lead->user_id,
@@ -82,7 +95,7 @@ class ZmController extends Controller
                 // broadcast(new NotificationSent($notification));
 
                 $update_message = [
-                    'lead_id' =>Crypt::encrypt($lead->id),
+                    'lead_id' => Crypt::encrypt($lead->id),
                     'receiver_id' => $lead->user_id,
                     'message' => $request->input('message') . ' .This Message For Tracking ID ' . $lead->id . '.',
                 ];
@@ -90,11 +103,11 @@ class ZmController extends Controller
                 break;
             case 'verified':
                 $lead->is_zm_verified = true;
-                $notification=Notification::create([
+                $notification = Notification::create([
                     'lead_id' => $lead->id,
                     'sender_id' => Auth::user()->id,
                     'receiver_id' => 2,
-                    'message' =>$request->input('message') .'Please send a quote for Lead ID ' . $lead->id . '.',
+                    'message' => $request->input('message') . 'Please send a quote for Lead ID ' . $lead->id . '.',
                 ]);
                 // broadcast(new NotificationSent($notification));
                 break;
@@ -210,12 +223,67 @@ class ZmController extends Controller
         ])
             ->where('is_cancel', 1)
             ->where('zm_id', Auth::user()->zm_id)
-            ->select('id', 'user_id','first_name', 'last_name','mobile_no','is_issue','is_zm_verified', 'is_retail_verified', 'updated_at')
+            ->select('id', 'user_id', 'first_name', 'last_name', 'mobile_no', 'is_issue', 'is_zm_verified', 'is_retail_verified', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->get();
 
         // return $cancelLeads;
         return view('zmpages.cancelLeads', compact('cancelLeads'));
     }
+
+    public function totalSalesReport()
+    {
+        return view('zmpages.report');
+    }
+
+    public function downloadReport(Request $request)
+    {
+        // Validate the date inputs
+        $request->validate([
+            'from_date' => 'required|date|before_or_equal:to_date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+        ]);
+
+        // dd($request->all());
+
+
+        $leads = Lead::with([
+
+            'user' => function ($query) {
+                $query->select('id', 'first_name', 'last_name', 'mobile');
+            },
+            'zonalManager' => function ($query) {
+                $query->select('id', 'name');
+            },
+            'quotes' => function ($query) {
+                $query->select('id', 'quote_name', 'lead_id', 'price', 'od_premium', 'tp_premium', 'vehicle_idv', 'policy_start_date', 'policy_end_date', 'is_accepted')
+                    ->latest('created_at')
+                    ->limit(1);
+            },
+            'lastNotification' => function ($query) {
+                $query->select('id', 'message', 'lead_id');
+            },
+        ])
+            ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue', 'is_zm_verified', 'is_retail_verified', 'is_cancel', 'payment_link', 'payment_receipt', 'is_payment_complete', 'final_status', 'updated_at', 'created_at')
+            ->where('zm_id', Auth::user()->zm_id)
+            ->whereBetween('created_at', [$request->from_date, $request->to_date . ' 23:59:59'])
+            ->get();
+
+        // echo '<pre>';
+        // print_r($leads);
+        // exit;
+
+        try {
+            return Excel::download(new LeadsExport($leads), 'leads_report.xlsx');
+        } catch (\Exception $e) {
+            Log::error('Error generating leads report: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->with('error', 'There was an issue generating the report.');
+        }
+    }
+
+
 
 }

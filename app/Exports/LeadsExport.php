@@ -33,9 +33,7 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping
             'Verify By Zm',
             'Verify Retail',
             'Send Quote Details',
-            'Payment Status',
             'Upload Policy Copy',
-            'cancel Status',
             'Customer Name',
             'Reg Number',
             'Mobile Number',
@@ -49,6 +47,7 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping
             'RSD',
             'RED',
             'Remarks',
+            'Final Status',
             'Lead Created Date',
             'Last Update Date'
         ];
@@ -58,18 +57,24 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping
     {
         $quote = $lead->quotes->isNotEmpty() ? $lead->quotes[0] : null;
         static $index = 1;
+
+        if ($lead->final_status) {
+            $final_staus = 'Completed';
+        } else if ($lead->is_cancel) {
+            $final_staus = 'Cancelled';
+        } else {
+            $final_staus = 'Pending';
+        }
         return [
             $index++,
             $lead->user->first_name . ' ' . $lead->user->last_name,
-            $lead->zonalManager->name ,
+            $lead->zonalManager->name,
             $lead->id,
             $lead->user->mobile,
             $lead->is_zm_verified ? 'Verified' : 'Pending',
             $lead->is_retail_verified ? 'Verified' : 'Pending',
             $lead->quotes ? 'Send' : 'Pending',
-            $lead->is_payment_complete ? 'Payment Complete' : 'Pending',
             $lead->final_status ? 'Uploaded' : 'not uploaded',
-            $lead->is_cancel ? 'Cancelled' : '',
             $lead->first_name . ' ' . $lead->last_name,
             $lead->vehicle_number,
             $lead->mobile_no,
@@ -82,7 +87,8 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping
             $quote ? $lead->quotes[0]->quote_name : 'Pending',
             $quote ? $lead->quotes[0]->policy_start_date : 'Pending',
             $quote ? $lead->quotes[0]->policy_end_date : 'Pending',
-            $lead->lastNotification?$lead->lastNotification->message:'No Remarks',
+            $lead->lastNotification ? $lead->lastNotification->message : 'No Remarks',
+            $final_staus,
             $lead->created_at,
             $lead->updated_at,
         ];
