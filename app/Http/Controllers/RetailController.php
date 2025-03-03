@@ -487,7 +487,7 @@ class RetailController extends Controller
             },
         ])
             ->select('id', 'user_id', 'zm_id', 'mobile_no', 'first_name', 'last_name', 'mobile_no', 'email', 'vehicle_type', 'vehicle_number', 'is_issue','is_zm_verified', 'is_retail_verified','is_cancel', 'payment_link', 'payment_receipt', 'is_payment_complete', 'final_status', 'updated_at', 'created_at')
-            ->whereBetween('created_at', [$request->from_date, $request->to_date.' 23:59:59'])
+            ->whereBetween('updated_at', [$request->from_date, $request->to_date.' 23:59:59'])
             ->get();
 
             // echo '<pre>';

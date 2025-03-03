@@ -37,7 +37,9 @@ class Lead extends Model
         'payment_link',
         'payment_receipt',
         'is_payment_complete',
-        'final_status'
+        'final_status',
+        'created_at',
+        'updated_at'
 
     ];
     protected $casts = [
